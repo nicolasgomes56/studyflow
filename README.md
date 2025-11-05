@@ -17,7 +17,7 @@ O **StudyFlow** é uma aplicação web moderna e intuitiva projetada para ajudar
 Com uma interface limpa e focada na experiência do usuário, o StudyFlow permite que você centralize todos os seus materiais de estudo, visualize seu desempenho através de estatísticas detalhadas e se mantenha motivado com um painel de insights.
 
 <!-- Adicione um GIF ou uma captura de tela da aplicação aqui -->
-![StudyFlow Screenshot](URL_DA_SUA_IMAGEM_AQUI)
+![StudyFlow Screenshot](/banner-img.png)
 
 ## 🚀 Funcionalidades Principais
 
