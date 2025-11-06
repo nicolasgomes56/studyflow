@@ -38,6 +38,7 @@ import {
   DropdownMenuTrigger,
 } from './ui/dropdown-menu';
 import { Progress } from './ui/progress';
+import { ScrollArea } from './ui/scroll-area';
 
 function CourseCardComponent({ course }: { course: Course }) {
   const { toggleModuleComplete, deleteCourse } = useCourses();
@@ -129,47 +130,49 @@ function CourseCardComponent({ course }: { course: Course }) {
               )}
               {isPending && <Loader2 className="h-4 w-4 animate-spin text-muted-foreground" />}
             </h4>
-            <div className="space-y-2">
-              {course.modules.map((module) => (
-                <div
-                  key={module.id}
-                  className="flex flex-col gap-2 p-3 rounded-lg border bg-card hover:bg-accent/50 transition-colors"
-                >
-                  <button
-                    type="button"
-                    onClick={() => handleToggleModule(module.id)}
-                    disabled={isPending}
-                    className={`flex items-start gap-3 text-left w-full ${isPending ? 'opacity-50 cursor-wait' : ''}`}
+            <ScrollArea className="h-80 w-full">
+              <div className="space-y-2">
+                {course.modules.map((module) => (
+                  <div
+                    key={module.id}
+                    className="flex flex-col gap-2 p-3 rounded-lg border bg-muted/40 hover:bg-muted/60 transition-colors"
                   >
-                    {module.completed ? (
-                      <CheckCircle2 className="h-5 w-5 text-primary shrink-0 mt-0.5" />
-                    ) : (
-                      <Circle className="h-5 w-5 text-muted-foreground shrink-0 mt-0.5" />
-                    )}
-                    <div className="flex-1 min-w-0">
-                      <p
-                        className={`font-medium text-sm ${module.completed ? 'line-through text-muted-foreground' : ''}`}
-                      >
-                        {module.title}
-                      </p>
-                      <div className="flex items-center gap-3 mt-1">
-                        <Badge variant="secondary" className="text-xs">
-                          {module.lessons} aulas
-                        </Badge>
-                        <Badge variant="secondary" className="text-xs">
-                          {[
-                            module.hours > 0 && `${module.hours}h`,
-                            module.minutes > 0 && `${module.minutes}min`,
-                          ]
-                            .filter(Boolean)
-                            .join(' ') || null}
-                        </Badge>
+                    <button
+                      type="button"
+                      onClick={() => handleToggleModule(module.id)}
+                      disabled={isPending}
+                      className={`flex items-start gap-3 text-left w-full ${isPending ? 'opacity-50 cursor-wait' : ''}`}
+                    >
+                      {module.completed ? (
+                        <CheckCircle2 className="h-5 w-5 text-primary shrink-0 mt-0.5" />
+                      ) : (
+                        <Circle className="h-5 w-5 text-muted-foreground shrink-0 mt-0.5" />
+                      )}
+                      <div className="flex-1 min-w-0">
+                        <p
+                          className={`font-medium text-sm ${module.completed ? 'line-through text-muted-foreground' : ''}`}
+                        >
+                          {module.title}
+                        </p>
+                        <div className="flex items-center gap-3 mt-1">
+                          <Badge variant="secondary" className="text-xs">
+                            {module.lessons} aulas
+                          </Badge>
+                          <Badge variant="secondary" className="text-xs">
+                            {[
+                              module.hours > 0 && `${module.hours}h`,
+                              module.minutes > 0 && `${module.minutes}min`,
+                            ]
+                              .filter(Boolean)
+                              .join(' ') || null}
+                          </Badge>
+                        </div>
                       </div>
-                    </div>
-                  </button>
-                </div>
-              ))}
-            </div>
+                    </button>
+                  </div>
+                ))}
+              </div>
+            </ScrollArea>
           </div>
         </CardContent>
       </CardHeader>

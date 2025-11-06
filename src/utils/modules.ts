@@ -1,14 +1,6 @@
 import type { ModuleFormData } from '@/schemas/module.schema';
 import type { Module } from '@/types/Module';
 
-export function calculateTotalMinutes(modules: ModuleFormData[]): number {
-  return modules.reduce((total, module) => {
-    const hours = (module.hours || 0) * 60;
-    const minutes = module.minutes || 0;
-    return total + hours + minutes;
-  }, 0);
-}
-
 export function calculateTotalLessons(modules: Array<Module | ModuleFormData>): number {
   return modules.reduce((total, module) => total + (module.lessons || 0), 0);
 }

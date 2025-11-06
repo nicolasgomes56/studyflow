@@ -1,5 +1,5 @@
 import { useCourses } from '@/hooks/useCourses';
-import { formatDuration, minutesToHours } from '@/utils';
+import { formatMinutesToHoursAndMinutes } from '@/utils';
 import { addDays, format } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
 import { Calendar, Clock, Loader2, TrendingUp } from 'lucide-react';
@@ -39,13 +39,13 @@ export function InsightsPanel() {
           activeCourses.map((course) => {
             const remainingMinutes = course.modules
               .filter((m) => !m.completed)
-              .reduce((sum, m) => sum + m.hours * 60 + (m.minutes || 0), 0);
+              .reduce((sum, m) => {
+                const hours = (m.hours || 0) * 60;
+                const minutes = m.minutes || 0;
+                return sum + hours + minutes;
+              }, 0);
 
-            const remainingHoursDecimal = minutesToHours(
-              Math.floor(remainingMinutes / 60),
-              remainingMinutes % 60
-            );
-
+            const remainingHoursDecimal = remainingMinutes / 60;
             const dailyHours = 1;
             const estimatedDays = Math.ceil(remainingHoursDecimal / dailyHours);
 
@@ -61,7 +61,9 @@ export function InsightsPanel() {
                       <Clock className="h-4 w-4" />
                       <span>Horas restantes</span>
                     </div>
-                    <p className="font-semibold">{formatDuration(remainingHoursDecimal)}</p>
+                    <p className="font-semibold">
+                      {formatMinutesToHoursAndMinutes(remainingMinutes)}
+                    </p>
                   </div>
 
                   <div className="space-y-1">
