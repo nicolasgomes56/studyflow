@@ -9,13 +9,25 @@ import {
   BookOpen,
   CheckCircle2,
   Circle,
-  Clock,
+  ClockIcon,
+  ListIcon,
+  Loader2,
   MoreHorizontalIcon,
   PencilIcon,
   Trash2,
 } from 'lucide-react';
-import { useState } from 'react';
+import { memo, useState, useTransition } from 'react';
 import { CourseDialog } from './course-dialog';
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from './ui/alert-dialog';
 import { Badge } from './ui/badge';
 import { Button } from './ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from './ui/card';
@@ -27,12 +39,28 @@ import {
 } from './ui/dropdown-menu';
 import { Progress } from './ui/progress';
 
-export function CourseCard({ course }: { course: Course }) {
+function CourseCardComponent({ course }: { course: Course }) {
   const { toggleModuleComplete, deleteCourse } = useCourses();
   const [isDialogOpen, setIsDialogOpen] = useState(false);
+  const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
+  const [isPending, startTransition] = useTransition();
+
   const { hours, minutes } = calculateTotalHoursAndMinutes(course.modules);
   const totalLessons = calculateTotalLessons(course.modules);
   const progress = calculateCourseProgress(course.modules);
+
+  const handleToggleModule = (moduleId: string) => {
+    startTransition(async () => {
+      await toggleModuleComplete({ courseId: course.id, moduleId });
+    });
+  };
+
+  const handleDeleteCourse = () => {
+    startTransition(async () => {
+      await deleteCourse(course.id);
+      setIsDeleteDialogOpen(false);
+    });
+  };
 
   return (
     <Card className="overflow-hidden">
@@ -42,14 +70,22 @@ export function CourseCard({ course }: { course: Course }) {
             <CardTitle className="text-xl">{course.title}</CardTitle>
             <div className="flex items-center gap-4 text-sm text-muted-foreground">
               <span className="flex items-center gap-1">
-                <BookOpen className="size-4" />
-                {totalLessons} Aulas
+                {totalLessons > 0 && (
+                  <>
+                    <BookOpen className="size-4" />
+                    {totalLessons} Aulas
+                  </>
+                )}
               </span>
               <span className="flex items-center gap-1">
-                <Clock className="size-4" />
-                {[hours > 0 && `${hours}h`, minutes > 0 && `${minutes}min`]
-                  .filter(Boolean)
-                  .join(' ') || null}
+                {(hours > 0 || minutes > 0) && (
+                  <>
+                    <ClockIcon className="size-4" />
+                    {[hours > 0 && `${hours}h`, minutes > 0 && `${minutes}min`]
+                      .filter(Boolean)
+                      .join(' ')}
+                  </>
+                )}
               </span>
             </div>
           </div>
@@ -66,7 +102,7 @@ export function CourseCard({ course }: { course: Course }) {
               </DropdownMenuItem>
               <DropdownMenuItem
                 className="text-destructive"
-                onClick={() => deleteCourse(course.id)}
+                onClick={() => setIsDeleteDialogOpen(true)}
               >
                 <Trash2 className="h-4 w-4 text-destructive" />
                 Deletar
@@ -84,7 +120,15 @@ export function CourseCard({ course }: { course: Course }) {
           </div>
 
           <div className="space-y-2">
-            <h4 className="text-sm font-medium">Módulos</h4>
+            <h4 className="text-sm font-medium flex items-center gap-2">
+              {course.modules.length > 0 && (
+                <>
+                  <ListIcon className="size-4" />
+                  Módulos
+                </>
+              )}
+              {isPending && <Loader2 className="h-4 w-4 animate-spin text-muted-foreground" />}
+            </h4>
             <div className="space-y-2">
               {course.modules.map((module) => (
                 <div
@@ -93,10 +137,9 @@ export function CourseCard({ course }: { course: Course }) {
                 >
                   <button
                     type="button"
-                    onClick={() =>
-                      toggleModuleComplete({ courseId: course.id, moduleId: module.id })
-                    }
-                    className="flex items-start gap-3 text-left w-full"
+                    onClick={() => handleToggleModule(module.id)}
+                    disabled={isPending}
+                    className={`flex items-start gap-3 text-left w-full ${isPending ? 'opacity-50 cursor-wait' : ''}`}
                   >
                     {module.completed ? (
                       <CheckCircle2 className="h-5 w-5 text-primary shrink-0 mt-0.5" />
@@ -131,6 +174,46 @@ export function CourseCard({ course }: { course: Course }) {
         </CardContent>
       </CardHeader>
       <CourseDialog courseId={course.id} isOpen={isDialogOpen} onOpenChange={setIsDialogOpen} />
+
+      <AlertDialog open={isDeleteDialogOpen} onOpenChange={setIsDeleteDialogOpen}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Tem certeza que deseja deletar este curso?</AlertDialogTitle>
+            <AlertDialogDescription>
+              Esta ação não pode ser desfeita. Isso irá deletar permanentemente o curso
+              <strong> "{course.title}"</strong> e todos os seus módulos.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel disabled={isPending}>Cancelar</AlertDialogCancel>
+            <AlertDialogAction
+              onClick={handleDeleteCourse}
+              disabled={isPending}
+              className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+            >
+              {isPending ? 'Deletando...' : 'Deletar Curso'}
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </Card>
   );
 }
+
+export const CourseCard = memo(CourseCardComponent, (prevProps, nextProps) => {
+  if (prevProps.course.id !== nextProps.course.id) return false;
+  if (prevProps.course === nextProps.course) return true;
+
+  return (
+    prevProps.course.title === nextProps.course.title &&
+    prevProps.course.modules.length === nextProps.course.modules.length &&
+    prevProps.course.modules.every((m, i) => {
+      const nextModule = nextProps.course.modules[i];
+      return (
+        m.id === nextModule.id &&
+        m.completed === nextModule.completed &&
+        m.title === nextModule.title
+      );
+    })
+  );
+});

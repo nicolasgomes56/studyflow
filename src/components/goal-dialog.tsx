@@ -1,7 +1,7 @@
 import { useGoal } from '@/hooks/useGoal';
-import type { Goals } from '@/types/Goals';
+import type { SaveGoalRequest } from '@/types/requests/goal.request';
 import { Target } from 'lucide-react';
-import { useState } from 'react';
+import { useState, useTransition } from 'react';
 import { Controller, useForm } from 'react-hook-form';
 import { Button } from './ui/button';
 import {
@@ -19,32 +19,25 @@ import { Switch } from './ui/switch';
 
 export function GoalDialog() {
   const [open, setOpen] = useState(false);
-  const { goal, saveGoal, isSaving, isLoading } = useGoal();
+  const { goal, saveGoal, isLoading } = useGoal();
+  const [isPending, startTransition] = useTransition();
 
   const {
     handleSubmit,
     register,
     control,
     formState: { errors },
-    reset,
-  } = useForm<Goals>({
-    defaultValues: {
-      daily_hours: goal?.daily_hours ?? 0,
-      consider_weekends: goal?.consider_weekends ?? true,
-    },
+  } = useForm<SaveGoalRequest>({
+    values: goal
+      ? { daily_hours: goal.daily_hours, consider_weekends: goal.consider_weekends }
+      : { daily_hours: 1, consider_weekends: true },
   });
 
-  const onSubmit = async (data: Goals) => {
-    await saveGoal(data);
-    setOpen(false);
-  };
-
-  const handleClose = () => {
-    reset({
-      daily_hours: 0,
-      consider_weekends: false,
+  const onSubmit = (data: SaveGoalRequest) => {
+    startTransition(async () => {
+      await saveGoal(data);
+      setOpen(false);
     });
-    setOpen(false);
   };
 
   return (
@@ -94,11 +87,16 @@ export function GoalDialog() {
             </div>
 
             <DialogFooter>
-              <Button variant="outline" type="button" onClick={handleClose}>
+              <Button
+                variant="outline"
+                type="button"
+                onClick={() => setOpen(false)}
+                disabled={isPending}
+              >
                 Cancelar
               </Button>
-              <Button type="submit" disabled={isSaving}>
-                {isSaving ? 'Salvando...' : 'Salvar Meta'}
+              <Button type="submit" disabled={isPending}>
+                {isPending ? 'Salvando...' : 'Salvar Meta'}
               </Button>
             </DialogFooter>
           </div>

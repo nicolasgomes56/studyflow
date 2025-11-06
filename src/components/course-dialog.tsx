@@ -2,6 +2,7 @@ import { useCourses } from '@/hooks/useCourses';
 import { type CourseFormData, courseFormSchema } from '@/schemas/course.schema';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { Plus, Trash2 } from 'lucide-react';
+import { useTransition } from 'react';
 import { useFieldArray, useForm } from 'react-hook-form';
 import { Button } from './ui/button';
 import {
@@ -23,57 +24,32 @@ interface CourseDialogProps {
 }
 
 export function CourseDialog({ courseId, isOpen, onOpenChange }: CourseDialogProps) {
-  const { createCourse, isCreating, updateCourse, isUpdating, courseFormValues } =
-    useCourses(courseId);
+  const { createCourse, updateCourse, courseFormValues } = useCourses(courseId);
+  const [isPending, startTransition] = useTransition();
 
   const {
     register,
     handleSubmit,
-    reset,
     control,
     formState: { errors },
   } = useForm<CourseFormData>({
     resolver: zodResolver(courseFormSchema),
-    defaultValues: courseFormValues ?? {
-      title: '',
-      modules: [],
-    },
-    values: courseFormValues,
+    values: courseFormValues ?? { title: '', modules: [] },
   });
 
-  const { fields, append, remove } = useFieldArray({
-    control,
-    name: 'modules',
-  });
+  const { fields, append, remove } = useFieldArray({ control, name: 'modules' });
 
-  const onSubmit = async (data: CourseFormData) => {
-    if (courseId) {
-      await updateCourse({
-        id: courseId,
-        input: {
-          title: data.title,
-          modules: data.modules,
-        },
-      });
-    } else {
-      await createCourse({
-        title: data.title,
-        modules: data.modules,
-      });
-    }
+  const onSubmit = (data: CourseFormData) => {
+    startTransition(async () => {
+      const action = courseId ? updateCourse({ id: courseId, input: data }) : createCourse(data);
 
-    onOpenChange(false);
-  };
-
-  const handleClose = () => {
-    onOpenChange(false);
-    if (!courseId) {
-      reset({ title: '', modules: [] });
-    }
+      await action;
+      onOpenChange(false);
+    });
   };
 
   return (
-    <Dialog open={isOpen} onOpenChange={handleClose}>
+    <Dialog open={isOpen} onOpenChange={onOpenChange}>
       <DialogContent className="max-w-2xl">
         <DialogHeader>
           <DialogTitle>{courseId ? 'Editar Curso' : 'Novo Curso'}</DialogTitle>
@@ -100,13 +76,7 @@ export function CourseDialog({ courseId, isOpen, onOpenChange }: CourseDialogPro
                 variant="outline"
                 size="sm"
                 onClick={() =>
-                  append({
-                    title: '',
-                    lessons: 0,
-                    hours: 0,
-                    minutes: 0,
-                    completed: false,
-                  })
+                  append({ title: '', lessons: 0, hours: 0, minutes: 0, completed: false })
                 }
                 className="gap-2"
               >
@@ -186,11 +156,16 @@ export function CourseDialog({ courseId, isOpen, onOpenChange }: CourseDialogPro
           </div>
 
           <DialogFooter>
-            <Button type="button" variant="outline" onClick={handleClose}>
+            <Button
+              type="button"
+              variant="outline"
+              onClick={() => onOpenChange(false)}
+              disabled={isPending}
+            >
               Cancelar
             </Button>
-            <Button type="submit" disabled={isCreating || isUpdating}>
-              {isCreating || isUpdating ? 'Salvando...' : 'Salvar Curso'}
+            <Button type="submit" disabled={isPending}>
+              {isPending ? 'Salvando...' : 'Salvar Curso'}
             </Button>
           </DialogFooter>
         </form>

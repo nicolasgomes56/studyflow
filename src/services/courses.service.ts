@@ -50,7 +50,9 @@ export const coursesService = {
       const modulesToDelete = existingIds.filter((id) => !updatedIds.includes(id));
 
       await Promise.all([
-        modulesToDelete.length > 0 ? modulesRepository.deleteMany(modulesToDelete) : Promise.resolve(),
+        modulesToDelete.length > 0
+          ? modulesRepository.deleteMany(modulesToDelete)
+          : Promise.resolve(),
         modulesToCreate.length > 0
           ? modulesRepository.createMany(
               modulesToCreate.map((m) => ({

@@ -1,6 +1,6 @@
-import { AnimatedThemeToggler } from '@/components/ui/animated-theme-toggler';
 import { GraduationCap, Loader2, Plus } from 'lucide-react';
 import { useState } from 'react';
+import { AnimatedThemeToggler } from '@/components/ui/animated-theme-toggler';
 import { CourseCard } from './components/course-card';
 import { CourseDialog } from './components/course-dialog';
 import { GoalDialog } from './components/goal-dialog';
@@ -8,7 +8,6 @@ import { InsightsPanel } from './components/insights-panel';
 import { StatsOverview } from './components/stats-overview';
 import { Button } from './components/ui/button';
 import { useCourses } from './hooks/useCourses';
-import type { Course } from './types/Course';
 
 export default function App() {
   const { courses, isLoading } = useCourses();
@@ -69,7 +68,7 @@ export default function App() {
             <div className="grid gap-6 lg:grid-cols-3">
               <div className="lg:col-span-2 space-y-6">
                 <div className="grid gap-6 md:grid-cols-2">
-                  {courses.map((course: Course) => (
+                  {courses.map((course) => (
                     <CourseCard key={course.id} course={course} />
                   ))}
                 </div>

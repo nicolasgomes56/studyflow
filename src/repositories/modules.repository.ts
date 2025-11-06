@@ -1,6 +1,6 @@
 import { supabase } from '@/lib/supabase';
-import type { Module } from '@/types/Module';
 import type { CreateModuleDTO, UpdateModuleDTO } from '@/types/dtos/module.dto';
+import type { Module } from '@/types/Module';
 
 export const modulesRepository = {
   async findByCourseId(courseId: string): Promise<Module[]> {
@@ -38,10 +38,7 @@ export const modulesRepository = {
   },
 
   async update(id: string, module: UpdateModuleDTO): Promise<void> {
-    const { error } = await supabase
-      .from('modules')
-      .update(module)
-      .eq('id', id);
+    const { error } = await supabase.from('modules').update(module).eq('id', id);
 
     if (error) throw error;
   },
@@ -62,10 +59,7 @@ export const modulesRepository = {
   async deleteMany(ids: string[]): Promise<void> {
     if (ids.length === 0) return;
 
-    const { error } = await supabase
-      .from('modules')
-      .delete()
-      .in('id', ids);
+    const { error } = await supabase.from('modules').delete().in('id', ids);
 
     if (error) throw error;
   },
@@ -91,4 +85,3 @@ export const modulesRepository = {
     if (updateError) throw updateError;
   },
 };
-

@@ -1,9 +1,9 @@
+import { useMutation, useQuery } from '@tanstack/react-query';
+import { toast } from 'sonner';
 import { queryClient } from '@/lib/queryClient';
 import { goalService } from '@/services/goal.service';
 import type { Goals } from '@/types/Goals';
 import type { SaveGoalRequest } from '@/types/requests/goal.request';
-import { useMutation, useQuery } from '@tanstack/react-query';
-import { toast } from 'sonner';
 
 const GOAL_KEY = 'goal';
 

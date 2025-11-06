@@ -3,6 +3,7 @@ import { coursesService } from '@/services/courses.service';
 import type { Course } from '@/types/Course';
 import type { UpdateCourseRequest } from '@/types/requests/course.request';
 import { useMutation, useQuery } from '@tanstack/react-query';
+import { useOptimistic } from 'react';
 import { toast } from 'sonner';
 
 const COURSES_KEY = 'courses';
@@ -12,6 +13,28 @@ export function useCourses(courseId?: string) {
     queryKey: [COURSES_KEY],
     queryFn: coursesService.getCourses,
   });
+
+  const [optimisticCourses, setOptimisticCourses] = useOptimistic(
+    query.data ?? [],
+    (state: Course[], { courseId, moduleId }: { courseId: string; moduleId: string }) => {
+      return state.map((course) => {
+        if (course.id !== courseId) return course;
+
+        return {
+          ...course,
+          modules: course.modules.map((module) => {
+            if (module.id !== moduleId) return module;
+
+            return {
+              ...module,
+              completed: !module.completed,
+              completed_at: !module.completed ? new Date().toISOString() : null,
+            };
+          }),
+        };
+      });
+    }
+  );
 
   const courseByIdQuery = useQuery({
     queryKey: [COURSES_KEY, courseId],
@@ -78,42 +101,13 @@ export function useCourses(courseId?: string) {
   });
 
   const toggleModuleMutation = useMutation({
-    mutationFn: ({ courseId, moduleId }: { courseId: string; moduleId: string }) =>
-      coursesService.toggleModuleComplete(courseId, moduleId),
+    mutationFn: async ({ courseId, moduleId }: { courseId: string; moduleId: string }) => {
+      setOptimisticCourses({ courseId, moduleId });
 
-    onMutate: async ({ courseId, moduleId }) => {
-      await queryClient.cancelQueries({ queryKey: [COURSES_KEY] });
-
-      const previousCourses = queryClient.getQueryData<Course[]>([COURSES_KEY]);
-
-      queryClient.setQueryData<Course[]>([COURSES_KEY], (oldCourses) => {
-        if (!oldCourses) return oldCourses;
-
-        return oldCourses.map((course) => {
-          if (course.id !== courseId) return course;
-
-          return {
-            ...course,
-            modules: course.modules.map((module) => {
-              if (module.id !== moduleId) return module;
-
-              return {
-                ...module,
-                completed: !module.completed,
-                completed_at: !module.completed ? new Date().toISOString() : null,
-              };
-            }),
-          };
-        });
-      });
-
-      return { previousCourses };
+      return coursesService.toggleModuleComplete(courseId, moduleId);
     },
 
-    onError: (error: Error, _variables, context) => {
-      if (context?.previousCourses) {
-        queryClient.setQueryData([COURSES_KEY], context.previousCourses);
-      }
+    onError: (error: Error) => {
       toast.error('Erro ao atualizar módulo', {
         description: error.message,
       });
@@ -125,7 +119,7 @@ export function useCourses(courseId?: string) {
   });
 
   return {
-    courses: query.data ?? [],
+    courses: optimisticCourses,
     isLoading: query.isLoading,
     isError: query.isError,
     error: query.error,

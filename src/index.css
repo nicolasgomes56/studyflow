@@ -3,7 +3,6 @@
 
 @custom-variant dark (&:is(.dark *));
 
-/* Updated color palette to warm orange/amber tones */
 :root {
   --radius: 0.65rem;
   --background: oklch(1 0 0);
@@ -123,7 +122,6 @@
     @apply bg-background text-foreground;
   }
 
-  /* Added markdown prose styles */
   .prose {
     @apply text-foreground;
   }
@@ -188,7 +186,6 @@
   mix-blend-mode: normal;
 }
 
-/* NumberFlow custom styles */
 number-flow-react {
   font-variant-numeric: tabular-nums;
 }
@@ -199,7 +196,6 @@ number-flow-react::part(suffix) {
   opacity: 0.8;
 }
 
-/* Custom Scrollbar Styles */
 [data-slot="scroll-area-scrollbar"] {
   width: 10px !important;
   padding: 2px;
@@ -215,7 +211,9 @@ number-flow-react::part(suffix) {
   background: hsl(var(--border)) !important;
   border-radius: 9999px;
   cursor: pointer;
-  transition: background 0.2s ease, width 0.2s ease;
+  transition:
+    background 0.2s ease,
+    width 0.2s ease;
   min-height: 20px;
 }
 
@@ -227,7 +225,6 @@ number-flow-react::part(suffix) {
   background: hsl(var(--primary)) !important;
 }
 
-/* Dark mode scrollbar */
 .dark [data-slot="scroll-area-thumb"] {
   background: hsl(var(--border)) !important;
 }

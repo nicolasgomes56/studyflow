@@ -1,6 +1,6 @@
 import { supabase } from '@/lib/supabase';
-import type { Goals } from '@/types/Goals';
 import type { UpsertGoalDTO } from '@/types/dtos/goal.dto';
+import type { Goals } from '@/types/Goals';
 
 export const goalsRepository = {
   async find(): Promise<Goals | null> {
