@@ -5,5 +5,5 @@ export interface Module {
   hours: number;
   minutes: number;
   completed: boolean;
-  completed_at?: string | null;
+  created_at: string;
 }

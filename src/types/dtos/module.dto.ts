@@ -13,7 +13,6 @@ export interface UpdateModuleDTO {
   hours?: number;
   minutes?: number;
   completed?: boolean;
-  completed_at?: string | null;
 }
 
 export interface ModuleResponse {
@@ -23,5 +22,4 @@ export interface ModuleResponse {
   hours: number;
   minutes: number;
   completed: boolean;
-  completed_at: string | null;
 }

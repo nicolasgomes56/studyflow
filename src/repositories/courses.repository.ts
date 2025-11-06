@@ -7,25 +7,41 @@ export const coursesRepository = {
     const { data, error } = await supabase
       .from('courses')
       .select(
-        'id, title, created_at, modules(id, title, lessons, hours, minutes, completed, completed_at)'
+        'id, title, created_at, modules(id, title, lessons, hours, minutes, completed, created_at)'
       )
       .order('created_at', { ascending: true });
 
     if (error) throw error;
-    return data as Course[];
+
+    // Ordenar os módulos por created_at para garantir ordem consistente
+    const courses = (data as Course[]).map((course) => ({
+      ...course,
+      modules: course.modules.sort(
+        (a, b) => new Date(a.created_at).getTime() - new Date(b.created_at).getTime()
+      ),
+    }));
+
+    return courses;
   },
 
   async findById(id: string): Promise<Course> {
     const { data, error } = await supabase
       .from('courses')
       .select(
-        'id, title, created_at, modules(id, title, lessons, hours, minutes, completed, completed_at)'
+        'id, title, created_at, modules(id, title, lessons, hours, minutes, completed, created_at)'
       )
       .eq('id', id)
       .single();
 
     if (error) throw error;
-    return data as Course;
+
+    // Ordenar os módulos por created_at para garantir ordem consistente
+    return {
+      ...data,
+      modules: data.modules.sort(
+        (a, b) => new Date(a.created_at).getTime() - new Date(b.created_at).getTime()
+      ),
+    } as Course;
   },
 
   async create(course: CreateCourseDTO): Promise<CourseResponse> {

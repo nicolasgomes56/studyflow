@@ -6,7 +6,7 @@ export const modulesRepository = {
   async findByCourseId(courseId: string): Promise<Module[]> {
     const { data, error } = await supabase
       .from('modules')
-      .select('id, title, lessons, hours, minutes, completed, completed_at')
+      .select('id, title, lessons, hours, minutes, completed, created_at')
       .eq('course_id', courseId)
       .order('created_at', { ascending: true });
 
@@ -17,7 +17,7 @@ export const modulesRepository = {
   async findById(id: string): Promise<Module> {
     const { data, error } = await supabase
       .from('modules')
-      .select('id, title, lessons, hours, minutes, completed, completed_at')
+      .select('id, title, lessons, hours, minutes, completed, created_at')
       .eq('id', id)
       .single();
 
@@ -31,7 +31,7 @@ export const modulesRepository = {
     const { data, error } = await supabase
       .from('modules')
       .insert(modules)
-      .select('id, title, lessons, hours, minutes, completed, completed_at');
+      .select('id, title, lessons, hours, minutes, completed, created_at');
 
     if (error) throw error;
     return data as Module[];
@@ -78,7 +78,6 @@ export const modulesRepository = {
       .from('modules')
       .update({
         completed: !module.completed,
-        completed_at: !module.completed ? new Date().toISOString() : null,
       })
       .eq('id', id);
 

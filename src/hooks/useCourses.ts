@@ -28,7 +28,6 @@ export function useCourses(courseId?: string) {
             return {
               ...module,
               completed: !module.completed,
-              completed_at: !module.completed ? new Date().toISOString() : null,
             };
           }),
         };
