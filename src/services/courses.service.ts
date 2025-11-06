@@ -1,159 +1,91 @@
-import { toast } from 'sonner';
-import { supabase } from '@/lib/supabase';
-import type { Course, CreateCourseReq, UpdateCourseReq } from '@/types/Course';
-import type { Module } from '@/types/Module';
+import { coursesRepository } from '@/repositories/courses.repository';
+import { modulesRepository } from '@/repositories/modules.repository';
+import type { Course } from '@/types/Course';
+import type { CreateCourseRequest, UpdateCourseRequest } from '@/types/requests/course.request';
 
 export const coursesService = {
-  // GET - Listar todos os cursos
   async getCourses(): Promise<Course[]> {
-    const { data, error } = await supabase
-      .from('courses')
-      .select('*, modules(*)')
-      .order('created_at', { ascending: true });
-
-    if (error) {
-      toast.error('Erro ao listar cursos', {
-        description: error.message,
-      });
-      return [];
-    }
-
-    return data;
+    return coursesRepository.findAll();
   },
 
-  // POST - Criar um novo curso
-  async createCourse(course: CreateCourseReq): Promise<Course> {
-    // Separar modules do objeto course antes de inserir
-    const { modules, ...courseData } = course;
+  async getCourseById(id: string): Promise<Course> {
+    return coursesRepository.findById(id);
+  },
 
-    const { data, error } = await supabase.from('courses').insert(courseData).select().single();
+  async createCourse(input: CreateCourseRequest): Promise<Course> {
+    const { modules, ...courseData } = input;
 
-    if (error) {
-      toast.error('Erro ao criar curso', {
-        description: error.message,
-      });
-      throw error;
-    }
+    const course = await coursesRepository.create(courseData);
 
-    // Inserir os módulos do curso
     if (modules && modules.length > 0) {
-      const modulesMap = modules.map((module) => ({
-        ...module,
-        course_id: data.id,
+      const modulesToCreate = modules.map((m) => ({
+        course_id: course.id,
+        title: m.title,
+        lessons: m.lessons,
+        hours: m.hours,
+        minutes: m.minutes,
+        completed: m.completed ?? false,
       }));
 
-      const { error: modulesError } = await supabase.from('modules').insert(modulesMap).select();
-
-      if (modulesError) throw modulesError;
-
-      // Buscar curso completo com módulos
-      const { data: fullCourse, error: fetchError } = await supabase
-        .from('courses')
-        .select('*, modules(*)')
-        .eq('id', data.id)
-        .single();
-
-      if (fetchError) throw fetchError;
-
-      return {
-        id: fullCourse.id,
-        title: fullCourse.title,
-        total_hours: fullCourse.total_hours,
-        total_lessons: fullCourse.total_lessons,
-        progress: fullCourse.progress,
-        created_at: fullCourse.created_at,
-        modules: (fullCourse.modules || []).map((mod: Module) => ({
-          id: mod.id,
-          title: mod.title,
-          lessons: mod.lessons,
-          hours: mod.hours,
-          minutes: mod.minutes,
-          completed: mod.completed,
-          completed_at: mod.completed_at,
-        })),
-      };
+      await modulesRepository.createMany(modulesToCreate);
     }
 
-    return data;
+    return coursesRepository.findById(course.id);
   },
 
-  // PATCH - Atualizar curso
-  async updateCourse(id: string, input: UpdateCourseReq): Promise<Course> {
-    const { data, error } = await supabase
-      .from('courses')
-      .update(input)
-      .eq('id', id)
-      .select('*, modules(*)')
-      .single();
+  async updateCourse(id: string, input: UpdateCourseRequest): Promise<Course> {
+    const { modules, ...courseData } = input;
 
-    if (error) {
-      toast.error('Erro ao atualizar curso', {
-        description: error.message,
-      });
+    if (Object.keys(courseData).length > 0) {
+      await coursesRepository.update(id, courseData);
     }
 
-    return {
-      id: data.id,
-      title: data.title,
-      total_hours: data.total_hours,
-      total_lessons: data.total_lessons,
-      progress: data.progress,
-      created_at: data.created_at,
-      modules: (data.modules || []).map((mod: any) => ({
-        id: mod.id,
-        title: mod.title,
-        lessons: mod.lessons,
-        hours: mod.hours,
-        completed: mod.completed,
-        completed_at: mod.completed_at,
-      })),
-    };
+    if (modules && modules.length > 0) {
+      const existingModules = await modulesRepository.findByCourseId(id);
+      const existingIds = existingModules.map((m) => m.id);
+
+      const modulesToUpdate = modules.filter((m) => m.id);
+      const modulesToCreate = modules.filter((m) => !m.id);
+      const updatedIds = modulesToUpdate.map((m) => m.id as string);
+      const modulesToDelete = existingIds.filter((id) => !updatedIds.includes(id));
+
+      await Promise.all([
+        modulesToDelete.length > 0 ? modulesRepository.deleteMany(modulesToDelete) : Promise.resolve(),
+        modulesToCreate.length > 0
+          ? modulesRepository.createMany(
+              modulesToCreate.map((m) => ({
+                course_id: id,
+                title: m.title,
+                lessons: m.lessons,
+                hours: m.hours,
+                minutes: m.minutes,
+                completed: m.completed ?? false,
+              }))
+            )
+          : Promise.resolve(),
+        modulesToUpdate.length > 0
+          ? modulesRepository.updateMany(
+              modulesToUpdate.map((m) => ({
+                id: m.id as string,
+                title: m.title,
+                lessons: m.lessons,
+                hours: m.hours,
+                minutes: m.minutes,
+                completed: m.completed,
+              }))
+            )
+          : Promise.resolve(),
+      ]);
+    }
+
+    return coursesRepository.findById(id);
   },
 
-  // DELETE - Deletar curso
   async deleteCourse(id: string): Promise<void> {
-    // Primeiro deletar todos os módulos do curso
-    const { error: modulesError } = await supabase.from('modules').delete().eq('course_id', id);
-
-    if (modulesError) {
-      toast.error('Erro ao deletar módulos', {
-        description: modulesError.message,
-      });
-      throw modulesError;
-    }
-
-    // Depois deletar o curso
-    const { error } = await supabase.from('courses').delete().eq('id', id);
-    if (error) {
-      toast.error('Erro ao deletar curso', {
-        description: error.message,
-      });
-      throw error;
-    }
+    await coursesRepository.delete(id);
   },
 
-  // PATCH - Toggle módulo completado
   async toggleModuleComplete(courseId: string, moduleId: string): Promise<void> {
-    // Primeiro buscar o estado atual
-    const { data: module, error: fetchError } = await supabase
-      .from('modules')
-      .select('completed')
-      .eq('id', moduleId)
-      .eq('course_id', courseId)
-      .single();
-
-    if (fetchError) throw fetchError;
-
-    // Inverter o estado
-    const { error: updateError } = await supabase
-      .from('modules')
-      .update({
-        completed: !module.completed,
-        completed_at: !module.completed ? new Date().toISOString() : null,
-      })
-      .eq('id', moduleId)
-      .eq('course_id', courseId);
-
-    if (updateError) throw updateError;
+    await modulesRepository.toggleComplete(moduleId, courseId);
   },
 };

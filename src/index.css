@@ -198,3 +198,44 @@ number-flow-react::part(suffix) {
   font-size: 0.9em;
   opacity: 0.8;
 }
+
+/* Custom Scrollbar Styles */
+[data-slot="scroll-area-scrollbar"] {
+  width: 10px !important;
+  padding: 2px;
+  background: transparent;
+  transition: background 0.2s ease;
+}
+
+[data-slot="scroll-area-scrollbar"]:hover {
+  background: hsl(var(--muted) / 0.5);
+}
+
+[data-slot="scroll-area-thumb"] {
+  background: hsl(var(--border)) !important;
+  border-radius: 9999px;
+  cursor: pointer;
+  transition: background 0.2s ease, width 0.2s ease;
+  min-height: 20px;
+}
+
+[data-slot="scroll-area-thumb"]:hover {
+  background: hsl(var(--primary) / 0.6) !important;
+}
+
+[data-slot="scroll-area-thumb"]:active {
+  background: hsl(var(--primary)) !important;
+}
+
+/* Dark mode scrollbar */
+.dark [data-slot="scroll-area-thumb"] {
+  background: hsl(var(--border)) !important;
+}
+
+.dark [data-slot="scroll-area-thumb"]:hover {
+  background: hsl(var(--primary) / 0.7) !important;
+}
+
+.dark [data-slot="scroll-area-thumb"]:active {
+  background: hsl(var(--primary)) !important;
+}

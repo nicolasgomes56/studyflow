@@ -1,29 +1,13 @@
-import { supabase } from '@/lib/supabase';
+import { goalsRepository } from '@/repositories/goals.repository';
 import type { Goals } from '@/types/Goals';
+import type { SaveGoalRequest } from '@/types/requests/goal.request';
 
 export const goalService = {
-  getGoal: async () => {
-    const { data, error } = await supabase.from('goals').select('*').limit(1).maybeSingle();
-
-    if (error) throw error;
-    return data;
+  async getGoal(): Promise<Goals | null> {
+    return goalsRepository.find();
   },
 
-  createGoal: async (goal: Goals) => {
-    const { data, error } = await supabase.from('goals').insert(goal).select().single();
-    if (error) throw error;
-    return data;
-  },
-
-  // Adicionar novo método para atualizar
-  updateGoal: async (id: string, goal: Goals) => {
-    const { data, error } = await supabase
-      .from('goals')
-      .update(goal)
-      .eq('id', id)
-      .select()
-      .single();
-    if (error) throw error;
-    return data;
+  async saveGoal(goal: SaveGoalRequest & { id?: string }): Promise<Goals> {
+    return goalsRepository.upsert(goal);
   },
 };

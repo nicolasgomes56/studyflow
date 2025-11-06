@@ -1,3 +1,10 @@
+import { useCourses } from '@/hooks/useCourses';
+import type { Course } from '@/types/Course';
+import {
+  calculateCourseProgress,
+  calculateTotalHoursAndMinutes,
+  calculateTotalLessons,
+} from '@/utils/modules';
 import {
   BookOpen,
   CheckCircle2,
@@ -7,9 +14,8 @@ import {
   PencilIcon,
   Trash2,
 } from 'lucide-react';
-import { useCourses } from '@/hooks/useCourses';
-import type { Course } from '@/types/Course';
-import { formatDuration } from '@/utils';
+import { useState } from 'react';
+import { CourseDialog } from './course-dialog';
 import { Badge } from './ui/badge';
 import { Button } from './ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from './ui/card';
@@ -23,6 +29,10 @@ import { Progress } from './ui/progress';
 
 export function CourseCard({ course }: { course: Course }) {
   const { toggleModuleComplete, deleteCourse } = useCourses();
+  const [isDialogOpen, setIsDialogOpen] = useState(false);
+  const { hours, minutes } = calculateTotalHoursAndMinutes(course.modules);
+  const totalLessons = calculateTotalLessons(course.modules);
+  const progress = calculateCourseProgress(course.modules);
 
   return (
     <Card className="overflow-hidden">
@@ -33,11 +43,13 @@ export function CourseCard({ course }: { course: Course }) {
             <div className="flex items-center gap-4 text-sm text-muted-foreground">
               <span className="flex items-center gap-1">
                 <BookOpen className="size-4" />
-                {course.total_lessons} Aulas
+                {totalLessons} Aulas
               </span>
               <span className="flex items-center gap-1">
                 <Clock className="size-4" />
-                {course.total_hours}h
+                {[hours > 0 && `${hours}h`, minutes > 0 && `${minutes}min`]
+                  .filter(Boolean)
+                  .join(' ') || null}
               </span>
             </div>
           </div>
@@ -48,7 +60,7 @@ export function CourseCard({ course }: { course: Course }) {
               </Button>
             </DropdownMenuTrigger>
             <DropdownMenuContent>
-              <DropdownMenuItem>
+              <DropdownMenuItem onClick={() => setIsDialogOpen(true)}>
                 <PencilIcon className="h-4 w-4" />
                 Editar
               </DropdownMenuItem>
@@ -66,9 +78,9 @@ export function CourseCard({ course }: { course: Course }) {
           <div className="space-y-2">
             <div className="flex items-center justify-between text-sm">
               <span className="text-muted-foreground">Progresso</span>
-              <span className="font-medium">{course.progress}%</span>
+              <span className="font-medium">{progress}%</span>
             </div>
-            <Progress value={course.progress} className="h-2" />
+            <Progress value={progress} className="h-2" />
           </div>
 
           <div className="space-y-2">
@@ -102,7 +114,12 @@ export function CourseCard({ course }: { course: Course }) {
                           {module.lessons} aulas
                         </Badge>
                         <Badge variant="secondary" className="text-xs">
-                          {formatDuration(module.hours)}
+                          {[
+                            module.hours > 0 && `${module.hours}h`,
+                            module.minutes > 0 && `${module.minutes}min`,
+                          ]
+                            .filter(Boolean)
+                            .join(' ') || null}
                         </Badge>
                       </div>
                     </div>
@@ -113,6 +130,7 @@ export function CourseCard({ course }: { course: Course }) {
           </div>
         </CardContent>
       </CardHeader>
+      <CourseDialog courseId={course.id} isOpen={isDialogOpen} onOpenChange={setIsDialogOpen} />
     </Card>
   );
 }

@@ -1,40 +1,43 @@
 import { queryClient } from '@/lib/queryClient';
 import { goalService } from '@/services/goal.service';
 import type { Goals } from '@/types/Goals';
+import type { SaveGoalRequest } from '@/types/requests/goal.request';
 import { useMutation, useQuery } from '@tanstack/react-query';
+import { toast } from 'sonner';
+
+const GOAL_KEY = 'goal';
 
 export function useGoal() {
-  const query = useQuery<Goals>({
-    queryKey: ['goal'],
-    queryFn: () => goalService.getGoal(),
+  const query = useQuery<Goals | null>({
+    queryKey: [GOAL_KEY],
+    queryFn: goalService.getGoal,
   });
 
-  // Mutation inteligente que cria ou atualiza dependendo se já existe
   const upsertMutation = useMutation({
-    mutationFn: async (goal: Goals) => {
-      // Se já existe um goal, atualiza. Senão, cria
-      if (query.data?.id) {
-        return goalService.updateGoal(query.data.id, goal);
-      }
-      return goalService.createGoal(goal);
+    mutationFn: async (goal: SaveGoalRequest) => {
+      return goalService.saveGoal({
+        ...goal,
+        id: query.data?.id,
+      });
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['goal'] });
+      queryClient.invalidateQueries({ queryKey: [GOAL_KEY] });
+      toast.success('Meta salva com sucesso!');
     },
-    onError: (error) => {
-      console.error(error);
+    onError: (error: Error) => {
+      toast.error('Erro ao salvar meta', {
+        description: error.message,
+      });
     },
   });
 
   return {
-    // Query
     goal: query.data ?? null,
     isLoading: query.isLoading,
     isError: query.isError,
     error: query.error,
 
-    // Mutations
-    saveGoal: upsertMutation.mutateAsync, // Nome mais apropriado
+    saveGoal: upsertMutation.mutateAsync,
     isSaving: upsertMutation.isPending,
   };
 }

@@ -1,8 +1,9 @@
 import z from 'zod';
 
 export const moduleSchema = z.object({
+  id: z.string().optional(),
   title: z.string().min(1, 'Título é obrigatório').trim(),
-  lessons: z.number().min(0, 'Deve ser maior ou igual a 0').int('Deve ser um número inteiro'),
+  lessons: z.number().min(0, 'Deve ser maior ou igual a 0').int().positive(),
   hours: z.number().min(0, 'Deve ser maior ou igual a 0').int('Deve ser um número inteiro'),
   minutes: z.number().min(0, 'Deve ser maior ou igual a 0').int('Deve ser um número inteiro'),
   completed: z.boolean(),

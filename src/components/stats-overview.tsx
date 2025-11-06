@@ -1,8 +1,8 @@
+import { useCourses } from '@/hooks/useCourses';
+import { getOverallProgress } from '@/utils';
 import NumberFlow from '@number-flow/react';
 import { Award, BookOpen, Clock, TrendingUp } from 'lucide-react';
 import { useMemo } from 'react';
-import { useCourses } from '@/hooks/useCourses';
-import { formatDuration, getOverallProgress } from '@/utils';
 import { BorderBeam } from './ui/border-beam';
 import { Card, CardContent, CardHeader, CardTitle } from './ui/card';
 
@@ -18,6 +18,15 @@ export function StatsOverview() {
     );
     const totalModules = coursesData.reduce((sum: number, c) => sum + c.modules.length, 0);
 
+    const totalHoursDisplay = stats.totalHours + stats.totalMinutes / 60;
+    const completedDisplay =
+      [
+        stats.completedHours > 0 && `${stats.completedHours}h`,
+        stats.completedMinutes > 0 && `${stats.completedMinutes}min`,
+      ]
+        .filter(Boolean)
+        .join(' ') || '0min';
+
     return [
       {
         title: 'Total de Cursos',
@@ -31,11 +40,11 @@ export function StatsOverview() {
       },
       {
         title: 'Horas Totais',
-        value: stats.totalHours,
+        value: totalHoursDisplay,
         isNumeric: true,
         suffix: 'h',
         icon: Clock,
-        description: `${formatDuration(stats.completedHours)} completadas`,
+        description: `${completedDisplay} completadas`,
         iconBg: 'bg-purple-500/10',
         iconColor: 'text-purple-600 dark:text-purple-400',
         beamColor: 'from-transparent via-purple-600 dark:via-purple-400 to-transparent',

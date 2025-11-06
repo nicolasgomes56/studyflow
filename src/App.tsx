@@ -1,15 +1,18 @@
-import { GraduationCap, Loader2 } from 'lucide-react';
 import { AnimatedThemeToggler } from '@/components/ui/animated-theme-toggler';
-import { CourseCard } from './components/add-course-card';
-import { AddCourseDialog } from './components/course-dialog';
+import { GraduationCap, Loader2, Plus } from 'lucide-react';
+import { useState } from 'react';
+import { CourseCard } from './components/course-card';
+import { CourseDialog } from './components/course-dialog';
 import { GoalDialog } from './components/goal-dialog';
 import { InsightsPanel } from './components/insights-panel';
 import { StatsOverview } from './components/stats-overview';
+import { Button } from './components/ui/button';
 import { useCourses } from './hooks/useCourses';
 import type { Course } from './types/Course';
 
 export default function App() {
   const { courses, isLoading } = useCourses();
+  const [isDialogOpen, setIsDialogOpen] = useState(false);
 
   return (
     <div className="min-h-screen bg-linear-to-br from-background via-background to-muted/20">
@@ -32,9 +35,15 @@ export default function App() {
         </header>
 
         <div className="flex flex-wrap items-center gap-4 mb-8">
-          <AddCourseDialog />
+          <Button onClick={() => setIsDialogOpen(true)} className="gap-2">
+            <Plus className="h-5 w-5" />
+            Novo Curso
+          </Button>
+
           <GoalDialog />
         </div>
+
+        <CourseDialog isOpen={isDialogOpen} onOpenChange={setIsDialogOpen} />
 
         <div className="space-y-8">
           <StatsOverview />
@@ -59,7 +68,6 @@ export default function App() {
           ) : (
             <div className="grid gap-6 lg:grid-cols-3">
               <div className="lg:col-span-2 space-y-6">
-                {/* <ProgressChart /> */}
                 <div className="grid gap-6 md:grid-cols-2">
                   {courses.map((course: Course) => (
                     <CourseCard key={course.id} course={course} />
@@ -69,7 +77,6 @@ export default function App() {
 
               <div className="lg:col-span-1 space-y-6">
                 <InsightsPanel />
-                {/* <RecentActivity /> */}
               </div>
             </div>
           )}

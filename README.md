@@ -10,11 +10,13 @@
 
 O **StudyFlow** é uma aplicação web moderna e intuitiva projetada para ajudar estudantes e aprendizes a organizar seus cursos, acompanhar o progresso e alcançar suas metas de estudo de forma eficiente.
 
+Este projeto nasceu da necessidade de uma ferramenta centralizada que não apenas registra o avanço nos estudos, mas também motiva o usuário através de uma interface limpa, insights visuais e um sistema de metas claras. Em um mundo com inúmeras fontes de conhecimento, o StudyFlow busca ser o seu parceiro para transformar o caos de informações em uma jornada de aprendizado estruturada e gratificante.
+
 ---
 
 ## ✨ Visão Geral
 
-Com uma interface limpa e focada na experiência do usuário, o StudyFlow permite que você centralize todos os seus materiais de estudo, visualize seu desempenho através de estatísticas detalhadas e se mantenha motivado com um painel de insights.
+Com uma interface limpa e focada na experiência do usuário, o StudyFlow permite que você centralize todos os seus materiais de estudo, visualize seu desempenho através de estatísticas detalhadas e se mantenha motivado com um painel de insights. O objetivo é remover a fricção do gerenciamento de estudos, permitindo que você se concentre no que realmente importa: aprender.
 
 <!-- Adicione um GIF ou uma captura de tela da aplicação aqui -->
 ![StudyFlow Screenshot](/banner-img.png)
@@ -92,20 +94,21 @@ A aplicação estará disponível em `http://localhost:5173`.
 
 ## 📂 Estrutura do Projeto
 
-A estrutura de arquivos foi organizada para manter o código modular e de fácil manutenção.
+A estrutura de arquivos foi organizada para manter o código modular, escalável e de fácil manutenção, seguindo princípios de separação de responsabilidades.
 
 ```
 /src
 ├── /assets
 ├── /components
-│   ├── /ui (Componentes Shadcn/ui)
-│   └── (Componentes da aplicação)
-├── /hooks
-├── /lib (Configurações de clientes - Supabase, QueryClient)
-├── /schemas (Validação com Zod)
-├── /services (Comunicação com a API)
-├── /types
-└── /utils
+│   ├── /ui (Componentes reutilizáveis do Shadcn/ui)
+│   └── (Componentes específicos da aplicação)
+├── /hooks (Hooks customizados para gerenciamento de estado e lógica da UI)
+├── /lib (Configurações de clientes - Supabase, QueryClient e utils)
+├── /repositories (Camada de acesso a dados, responsável pela comunicação com o Supabase)
+├── /schemas (Validação de dados com Zod)
+├── /services (Lógica de negócios, orquestrando as chamadas aos repositórios)
+├── /types (Definições de tipos e interfaces do TypeScript)
+└── /utils (Funções utilitárias)
 ```
 
 ---

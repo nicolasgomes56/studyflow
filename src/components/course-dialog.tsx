@@ -1,10 +1,8 @@
-import { zodResolver } from '@hookform/resolvers/zod';
-import { Plus, Trash2 } from 'lucide-react';
-import { useEffect, useState } from 'react';
-import { useFieldArray, useForm } from 'react-hook-form';
 import { useCourses } from '@/hooks/useCourses';
 import { type CourseFormData, courseFormSchema } from '@/schemas/course.schema';
-import { calculateTotalHours, calculateTotalLessons, processModulesForSubmission } from '@/utils';
+import { zodResolver } from '@hookform/resolvers/zod';
+import { Plus, Trash2 } from 'lucide-react';
+import { useFieldArray, useForm } from 'react-hook-form';
 import { Button } from './ui/button';
 import {
   Dialog,
@@ -13,15 +11,20 @@ import {
   DialogFooter,
   DialogHeader,
   DialogTitle,
-  DialogTrigger,
 } from './ui/dialog';
 import { Input } from './ui/input';
 import { Label } from './ui/label';
 import { ScrollArea } from './ui/scroll-area';
 
-export function AddCourseDialog() {
-  const [open, setOpen] = useState(false);
-  const { createCourse, isCreating } = useCourses();
+interface CourseDialogProps {
+  courseId?: string;
+  isOpen: boolean;
+  onOpenChange: (open: boolean) => void;
+}
+
+export function CourseDialog({ courseId, isOpen, onOpenChange }: CourseDialogProps) {
+  const { createCourse, isCreating, updateCourse, isUpdating, courseFormValues } =
+    useCourses(courseId);
 
   const {
     register,
@@ -31,10 +34,11 @@ export function AddCourseDialog() {
     formState: { errors },
   } = useForm<CourseFormData>({
     resolver: zodResolver(courseFormSchema),
-    defaultValues: {
+    defaultValues: courseFormValues ?? {
       title: '',
       modules: [],
     },
+    values: courseFormValues,
   });
 
   const { fields, append, remove } = useFieldArray({
@@ -42,43 +46,37 @@ export function AddCourseDialog() {
     name: 'modules',
   });
 
-  // Resetar formulário quando o diálogo fechar
-  useEffect(() => {
-    if (!open) {
-      reset({
-        title: '',
-        modules: [],
+  const onSubmit = async (data: CourseFormData) => {
+    if (courseId) {
+      await updateCourse({
+        id: courseId,
+        input: {
+          title: data.title,
+          modules: data.modules,
+        },
+      });
+    } else {
+      await createCourse({
+        title: data.title,
+        modules: data.modules,
       });
     }
-  }, [open, reset]);
 
-  const onSubmit = async (data: CourseFormData) => {
-    const processedModules = processModulesForSubmission(data.modules);
-    const totalHours = calculateTotalHours(data.modules);
-    const totalLessons = calculateTotalLessons(data.modules);
+    onOpenChange(false);
+  };
 
-    await createCourse({
-      title: data.title,
-      total_hours: Math.round(totalHours * 100) / 100,
-      total_lessons: totalLessons,
-      modules: processedModules,
-    });
-
-    setOpen(false);
-    reset();
+  const handleClose = () => {
+    onOpenChange(false);
+    if (!courseId) {
+      reset({ title: '', modules: [] });
+    }
   };
 
   return (
-    <Dialog open={open} onOpenChange={setOpen}>
-      <DialogTrigger asChild>
-        <Button className="gap-2">
-          <Plus className="h-5 w-5" />
-          Adicionar Curso
-        </Button>
-      </DialogTrigger>
+    <Dialog open={isOpen} onOpenChange={handleClose}>
       <DialogContent className="max-w-2xl">
         <DialogHeader>
-          <DialogTitle>Adicionar Novo Curso</DialogTitle>
+          <DialogTitle>{courseId ? 'Editar Curso' : 'Novo Curso'}</DialogTitle>
           <DialogDescription>
             Adicione um curso e seus módulos para começar a organizar seus estudos.
           </DialogDescription>
@@ -153,7 +151,6 @@ export function AddCourseDialog() {
                           <Label>Aulas</Label>
                           <Input
                             type="number"
-                            min="0"
                             {...register(`modules.${index}.lessons`, {
                               valueAsNumber: true,
                             })}
@@ -164,7 +161,6 @@ export function AddCourseDialog() {
                           <Label>Horas</Label>
                           <Input
                             type="number"
-                            min="0"
                             {...register(`modules.${index}.hours`, {
                               valueAsNumber: true,
                             })}
@@ -175,8 +171,6 @@ export function AddCourseDialog() {
                           <Label>Minutos</Label>
                           <Input
                             type="number"
-                            min="0"
-                            max="59"
                             {...register(`modules.${index}.minutes`, {
                               valueAsNumber: true,
                             })}
@@ -192,21 +186,11 @@ export function AddCourseDialog() {
           </div>
 
           <DialogFooter>
-            <Button
-              type="button"
-              variant="outline"
-              onClick={() => {
-                setOpen(false);
-                reset({
-                  title: '',
-                  modules: [],
-                });
-              }}
-            >
+            <Button type="button" variant="outline" onClick={handleClose}>
               Cancelar
             </Button>
-            <Button type="submit" disabled={isCreating}>
-              {isCreating ? 'Adicionando...' : 'Adicionar Curso'}
+            <Button type="submit" disabled={isCreating || isUpdating}>
+              {isCreating || isUpdating ? 'Salvando...' : 'Salvar Curso'}
             </Button>
           </DialogFooter>
         </form>

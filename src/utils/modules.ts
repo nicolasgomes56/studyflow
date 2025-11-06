@@ -1,46 +1,39 @@
 import type { ModuleFormData } from '@/schemas/module.schema';
-import { minutesToHours } from './time';
+import type { Module } from '@/types/Module';
 
-/**
- * Converte minutos em horas e retorna o total de horas de um módulo
- */
-export function calculateModuleTotalHours(hours: number, minutes: number): number {
-  return minutesToHours(hours, minutes);
-}
-
-/**
- * Processa um módulo convertendo minutos em horas
- */
-export function processModuleForSubmission(module: ModuleFormData) {
-  const totalHours = calculateModuleTotalHours(module.hours || 0, module.minutes || 0);
-  return {
-    title: module.title,
-    lessons: module.lessons,
-    hours: Math.round(totalHours * 100) / 100, // Arredondar para 2 casas decimais
-    completed: module.completed,
-  };
-}
-
-/**
- * Calcula o total de horas de todos os módulos
- */
-export function calculateTotalHours(modules: ModuleFormData[]): number {
+export function calculateTotalMinutes(modules: ModuleFormData[]): number {
   return modules.reduce((total, module) => {
-    const moduleHours = calculateModuleTotalHours(module.hours || 0, module.minutes || 0);
-    return total + moduleHours;
+    const hours = (module.hours || 0) * 60;
+    const minutes = module.minutes || 0;
+    return total + hours + minutes;
   }, 0);
 }
 
-/**
- * Calcula o total de aulas de todos os módulos
- */
-export function calculateTotalLessons(modules: ModuleFormData[]): number {
+export function calculateTotalLessons(modules: Array<Module | ModuleFormData>): number {
   return modules.reduce((total, module) => total + (module.lessons || 0), 0);
 }
 
-/**
- * Processa todos os módulos para submissão
- */
-export function processModulesForSubmission(modules: ModuleFormData[]) {
-  return modules.map(processModuleForSubmission);
+export function calculateTotalHoursAndMinutes(modules: Array<Module | ModuleFormData>): {
+  hours: number;
+  minutes: number;
+} {
+  const totalMinutes = modules.reduce((total, module) => {
+    const hours = (module.hours || 0) * 60;
+    const minutes = module.minutes || 0;
+    return total + hours + minutes;
+  }, 0);
+
+  const hours = Math.floor(totalMinutes / 60);
+  const minutes = totalMinutes % 60;
+
+  return { hours, minutes };
+}
+
+export function calculateCourseProgress(modules: Module[]): number {
+  if (!modules || modules.length === 0) return 0;
+
+  const completedModules = modules.filter((m) => m.completed).length;
+  const totalModules = modules.length;
+
+  return totalModules > 0 ? Math.round((completedModules / totalModules) * 100) : 0;
 }
