@@ -1,4 +1,5 @@
 import { useCourses } from '@/hooks/useCourses';
+import { useGoal } from '@/hooks/useGoal';
 import { formatMinutesToHoursAndMinutes } from '@/utils';
 import { addDays, format } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
@@ -8,6 +9,7 @@ import { Card, CardContent, CardHeader, CardTitle } from './ui/card';
 
 export function InsightsPanel() {
   const { courses } = useCourses();
+  const { goal } = useGoal();
 
   const deferredCourses = useDeferredValue(courses);
 
@@ -46,7 +48,7 @@ export function InsightsPanel() {
               }, 0);
 
             const remainingHoursDecimal = remainingMinutes / 60;
-            const dailyHours = 1;
+            const dailyHours = goal?.daily_hours ?? 1;
             const estimatedDays = Math.ceil(remainingHoursDecimal / dailyHours);
 
             return (
