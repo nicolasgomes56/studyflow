@@ -1,8 +1,8 @@
-import { useCourses } from '@/hooks/useCourses';
-import { getOverallProgress } from '@/utils';
 import NumberFlow from '@number-flow/react';
 import { Award, BookOpen, Clock, TrendingUp } from 'lucide-react';
 import { useDeferredValue, useMemo } from 'react';
+import { useCourses } from '@/hooks/useCourses';
+import { getOverallProgress } from '@/utils';
 import { BorderBeam } from './ui/border-beam';
 import { Card, CardContent, CardHeader, CardTitle } from './ui/card';
 
@@ -106,7 +106,7 @@ export function StatsOverview() {
   const isStale = courses !== deferredCourses;
 
   return (
-    <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
+    <div className='grid gap-4 md:grid-cols-2 lg:grid-cols-4'>
       {statCards.map((stat) => {
         const Icon = stat.icon;
         return (
@@ -114,8 +114,8 @@ export function StatsOverview() {
             key={stat.title}
             className={`relative border-border/50 hover:border-border transition-all overflow-hidden ${isStale ? 'opacity-70' : 'opacity-100'}`}
           >
-            <CardHeader className="flex flex-row items-center justify-between pb-3">
-              <CardTitle className="text-sm font-medium text-muted-foreground">
+            <CardHeader className='flex flex-row items-center justify-between pb-3'>
+              <CardTitle className='text-sm font-medium text-muted-foreground'>
                 {stat.title}
               </CardTitle>
               <div className={`p-2 rounded-lg ${stat.iconBg}`}>
@@ -123,7 +123,7 @@ export function StatsOverview() {
               </div>
             </CardHeader>
             <CardContent>
-              <div className="text-3xl font-bold mb-1 tabular-nums">
+              <div className='text-3xl font-bold mb-1 tabular-nums'>
                 {stat.isNumeric ? (
                   <NumberFlow
                     value={stat.value}
@@ -134,7 +134,7 @@ export function StatsOverview() {
                   stat.value
                 )}
               </div>
-              <p className="text-xs text-muted-foreground">{stat.description}</p>
+              <p className='text-xs text-muted-foreground'>{stat.description}</p>
             </CardContent>
             <BorderBeam size={150} duration={12} delay={2} className={stat.beamColor} />
           </Card>

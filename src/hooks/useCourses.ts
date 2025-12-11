@@ -1,10 +1,10 @@
+import { useMutation, useQuery } from '@tanstack/react-query';
+import { useOptimistic } from 'react';
+import { toast } from 'sonner';
 import { queryClient } from '@/lib/queryClient';
 import { coursesService } from '@/services/courses.service';
 import type { Course } from '@/types/Course';
 import type { UpdateCourseRequest } from '@/types/requests/course.request';
-import { useMutation, useQuery } from '@tanstack/react-query';
-import { useOptimistic } from 'react';
-import { toast } from 'sonner';
 
 const COURSES_KEY = 'courses';
 

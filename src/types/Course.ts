@@ -5,4 +5,6 @@ export interface Course {
   title: string;
   modules: Module[];
   created_at: string;
+  certificate_issued_at?: string | null;
+  certificate_url?: string | null;
 }

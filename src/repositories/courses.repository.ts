@@ -7,7 +7,7 @@ export const coursesRepository = {
     const { data, error } = await supabase
       .from('courses')
       .select(
-        'id, title, created_at, modules(id, title, lessons, hours, minutes, completed, created_at)'
+        'id, title, created_at, certificate_issued_at, certificate_url, modules(id, title, lessons, hours, minutes, completed, created_at)'
       )
       .order('created_at', { ascending: true });
 
@@ -28,7 +28,7 @@ export const coursesRepository = {
     const { data, error } = await supabase
       .from('courses')
       .select(
-        'id, title, created_at, modules(id, title, lessons, hours, minutes, completed, created_at)'
+        'id, title, created_at, certificate_issued_at, certificate_url, modules(id, title, lessons, hours, minutes, completed, created_at)'
       )
       .eq('id', id)
       .single();

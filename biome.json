@@ -36,7 +36,7 @@
   "javascript": {
     "formatter": {
       "quoteStyle": "single",
-      "jsxQuoteStyle": "double",
+      "jsxQuoteStyle": "single",
       "trailingCommas": "es5",
       "semicolons": "always",
       "arrowParentheses": "always",

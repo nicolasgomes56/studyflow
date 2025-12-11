@@ -1,8 +1,8 @@
-import { useGoal } from '@/hooks/useGoal';
-import type { SaveGoalRequest } from '@/types/requests/goal.request';
 import { Target } from 'lucide-react';
 import { useState, useTransition } from 'react';
 import { Controller, useForm } from 'react-hook-form';
+import { useGoal } from '@/hooks/useGoal';
+import type { SaveGoalRequest } from '@/types/requests/goal.request';
 import { Button } from './ui/button';
 import {
   Dialog,
@@ -42,15 +42,15 @@ export function GoalDialog() {
 
   return (
     <Dialog open={open && !isLoading} onOpenChange={setOpen}>
-      <DialogTrigger>
-        <Button variant="outline" className="gap-2 bg-transparent">
-          <Target className="h-4 w-4" />
+      <DialogTrigger asChild>
+        <Button variant='outline' className='gap-2 bg-transparent'>
+          <Target className='h-4 w-4' />
           Meta: {goal?.daily_hours}h/dia
         </Button>
       </DialogTrigger>
       <DialogContent>
         <form onSubmit={handleSubmit(onSubmit)}>
-          <div className="space-y-6 py-4">
+          <div className='space-y-6 py-4'>
             <DialogHeader>
               <DialogTitle>Configurar Meta de Estudos</DialogTitle>
               <DialogDescription>
@@ -59,43 +59,43 @@ export function GoalDialog() {
               </DialogDescription>
             </DialogHeader>
 
-            <div className="space-y-2">
-              <Label htmlFor="daily-hours">Horas por dia</Label>
+            <div className='space-y-2'>
+              <Label htmlFor='daily-hours'>Horas por dia</Label>
               <Input
-                id="daily-hours"
-                type="number"
+                id='daily-hours'
+                type='number'
                 validation={errors.daily_hours}
                 {...register('daily_hours')}
               />
-              <p className="text-xs text-muted-foreground">
+              <p className='text-xs text-muted-foreground'>
                 Quantas horas você consegue dedicar aos estudos por dia?
               </p>
             </div>
 
-            <div className="flex items-center justify-between">
-              <div className="space-y-0.5">
-                <Label htmlFor="weekends">Estudar nos fins de semana</Label>
-                <p className="text-xs text-muted-foreground">Incluir sábado e domingo no cálculo</p>
+            <div className='flex items-center justify-between'>
+              <div className='space-y-0.5'>
+                <Label htmlFor='weekends'>Estudar nos fins de semana</Label>
+                <p className='text-xs text-muted-foreground'>Incluir sábado e domingo no cálculo</p>
               </div>
               <Controller
-                name="consider_weekends"
+                name='consider_weekends'
                 control={control}
                 render={({ field }) => (
-                  <Switch id="weekends" checked={field.value} onCheckedChange={field.onChange} />
+                  <Switch id='weekends' checked={field.value} onCheckedChange={field.onChange} />
                 )}
               />
             </div>
 
             <DialogFooter>
               <Button
-                variant="outline"
-                type="button"
+                variant='outline'
+                type='button'
                 onClick={() => setOpen(false)}
                 disabled={isPending}
               >
                 Cancelar
               </Button>
-              <Button type="submit" disabled={isPending}>
+              <Button type='submit' disabled={isPending}>
                 {isPending ? 'Salvando...' : 'Salvar Meta'}
               </Button>
             </DialogFooter>

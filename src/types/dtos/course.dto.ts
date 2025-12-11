@@ -4,6 +4,8 @@ export interface CreateCourseDTO {
 
 export interface UpdateCourseDTO {
   title?: string;
+  certificate_issued_at?: string | null;
+  certificate_url?: string | null;
 }
 
 export interface CourseResponse {
