@@ -1,16 +1,20 @@
 import { GraduationCap, Loader2, Plus } from 'lucide-react';
 import { useState } from 'react';
+import { useQuery } from '@tanstack/react-query';
 import { AnimatedThemeToggler } from '@/components/ui/animated-theme-toggler';
+import { coursesService } from '@/services/courses.service';
 import { CourseCard } from './components/course-card';
 import { CourseDialog } from './components/course-dialog';
 import { GoalDialog } from './components/goal-dialog';
 import { InsightsPanel } from './components/insights-panel';
 import { StatsOverview } from './components/stats-overview';
 import { Button } from './components/ui/button';
-import { useCourses } from './hooks/useCourses';
 
 export default function App() {
-  const { courses, isLoading } = useCourses();
+  const { data: courses = [], isLoading } = useQuery({
+    queryKey: ['courses'],
+    queryFn: coursesService.getCourses,
+  });
   const [isDialogOpen, setIsDialogOpen] = useState(false);
 
   return (

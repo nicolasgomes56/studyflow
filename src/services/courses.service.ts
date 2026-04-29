@@ -1,24 +1,37 @@
-import { coursesRepository } from '@/repositories/courses.repository';
-import { modulesRepository } from '@/repositories/modules.repository';
+import { api } from '@/lib/axios';
 import type { Course } from '@/types/Course';
-import type { CreateCourseRequest, UpdateCourseRequest } from '@/types/requests/course.request';
+import type { ICourseResp } from '@/types/responses/course.response';
+import type {
+  ICreateCoursePayloadReq,
+  ICreateCourseReq,
+  IUpdateCoursePayloadReq,
+  IUpdateCourseReq,
+} from '@/types/requests/course.request';
+import type { Module } from '@/types/Module';
+import type { ICreateModuleReq, IUpdateModuleReq } from '@/types/requests/module.request';
+
+const sortModules = (modules: Module[]) =>
+  [...modules].sort((a, b) => new Date(a.created_at).getTime() - new Date(b.created_at).getTime());
 
 export const coursesService = {
   async getCourses(): Promise<Course[]> {
-    return coursesRepository.findAll();
+    const { data } = await api.get<Course[]>('/courses');
+    return data.map((course) => ({ ...course, modules: sortModules(course.modules) }));
   },
 
   async getCourseById(id: string): Promise<Course> {
-    return coursesRepository.findById(id);
+    const { data } = await api.get<Course>(`/courses/${id}`);
+    return { ...data, modules: sortModules(data.modules) };
   },
 
-  async createCourse(input: CreateCourseRequest): Promise<Course> {
+  async createCourse(input: ICreateCourseReq): Promise<Course> {
     const { modules, ...courseData } = input;
 
-    const course = await coursesRepository.create(courseData);
+    const payload: ICreateCoursePayloadReq = { title: courseData.title };
+    const { data: course } = await api.post<ICourseResp>('/courses', payload);
 
     if (modules && modules.length > 0) {
-      const modulesToCreate = modules.map((m) => ({
+      const modulesToCreate: ICreateModuleReq[] = modules.map((m) => ({
         course_id: course.id,
         title: m.title,
         lessons: m.lessons,
@@ -27,21 +40,22 @@ export const coursesService = {
         completed: m.completed ?? false,
       }));
 
-      await modulesRepository.createMany(modulesToCreate);
+      await api.post('/modules/bulk', modulesToCreate);
     }
 
-    return coursesRepository.findById(course.id);
+    return this.getCourseById(course.id);
   },
 
-  async updateCourse(id: string, input: UpdateCourseRequest): Promise<Course> {
+  async updateCourse(id: string, input: IUpdateCourseReq): Promise<Course> {
     const { modules, ...courseData } = input;
 
     if (Object.keys(courseData).length > 0) {
-      await coursesRepository.update(id, courseData);
+      const payload: IUpdateCoursePayloadReq = { title: courseData.title };
+      await api.patch(`/courses/${id}`, payload);
     }
 
     if (modules && modules.length > 0) {
-      const existingModules = await modulesRepository.findByCourseId(id);
+      const { data: existingModules } = await api.get<Module[]>(`/modules?courseId=${id}`);
       const existingIds = existingModules.map((m) => m.id);
 
       const modulesToUpdate = modules.filter((m) => m.id);
@@ -50,11 +64,10 @@ export const coursesService = {
       const modulesToDelete = existingIds.filter((id) => !updatedIds.includes(id));
 
       await Promise.all([
-        modulesToDelete.length > 0
-          ? modulesRepository.deleteMany(modulesToDelete)
-          : Promise.resolve(),
+        modulesToDelete.length > 0 ? api.delete('/modules', { data: { ids: modulesToDelete } }) : null,
         modulesToCreate.length > 0
-          ? modulesRepository.createMany(
+          ? api.post(
+              '/modules/bulk',
               modulesToCreate.map((m) => ({
                 course_id: id,
                 title: m.title,
@@ -64,30 +77,32 @@ export const coursesService = {
                 completed: m.completed ?? false,
               }))
             )
-          : Promise.resolve(),
+          : null,
         modulesToUpdate.length > 0
-          ? modulesRepository.updateMany(
-              modulesToUpdate.map((m) => ({
-                id: m.id as string,
-                title: m.title,
-                lessons: m.lessons,
-                hours: m.hours,
-                minutes: m.minutes,
-                completed: m.completed,
-              }))
+          ? Promise.all(
+              modulesToUpdate.map((m) => {
+                const payload: IUpdateModuleReq = {
+                  title: m.title,
+                  lessons: m.lessons,
+                  hours: m.hours,
+                  minutes: m.minutes,
+                  completed: m.completed,
+                };
+                return api.patch(`/modules/${m.id as string}`, payload);
+              })
             )
-          : Promise.resolve(),
+          : null,
       ]);
     }
 
-    return coursesRepository.findById(id);
+    return this.getCourseById(id);
   },
 
   async deleteCourse(id: string): Promise<void> {
-    await coursesRepository.delete(id);
+    await api.delete(`/courses/${id}`);
   },
 
   async toggleModuleComplete(courseId: string, moduleId: string): Promise<void> {
-    await modulesRepository.toggleComplete(moduleId, courseId);
+    await api.post(`/modules/${moduleId}/toggle?courseId=${courseId}`);
   },
 };

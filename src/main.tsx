@@ -8,15 +8,26 @@ import App from './App';
 import { ThemeProvider } from './components/ui/theme-provider';
 import './index.css';
 
-createRoot(document.getElementById('root')!).render(
-  <StrictMode>
-    <I18nProvider locale='pt-BR'>
-      <ThemeProvider defaultTheme='system' storageKey='vite-ui-theme'>
-        <QueryClientProvider client={queryClient}>
-          <Toaster richColors />
-          <App />
-        </QueryClientProvider>
-      </ThemeProvider>
-    </I18nProvider>
-  </StrictMode>
-);
+async function enableMocking() {
+  if (import.meta.env.DEV) {
+    const { worker } = await import('./mocks/browser');
+    await worker.start({
+      onUnhandledRequest: 'bypass',
+    });
+  }
+}
+
+enableMocking().then(() => {
+  createRoot(document.getElementById('root')!).render(
+    <StrictMode>
+      <I18nProvider locale='pt-BR'>
+        <ThemeProvider defaultTheme='system' storageKey='vite-ui-theme'>
+          <QueryClientProvider client={queryClient}>
+            <Toaster richColors />
+            <App />
+          </QueryClientProvider>
+        </ThemeProvider>
+      </I18nProvider>
+    </StrictMode>
+  );
+});

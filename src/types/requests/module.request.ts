@@ -1,4 +1,4 @@
-export interface CreateModuleRequest {
+export interface ICreateModuleReq {
   course_id: string;
   title: string;
   lessons: number;
@@ -7,7 +7,7 @@ export interface CreateModuleRequest {
   completed?: boolean;
 }
 
-export interface UpdateModuleRequest {
+export interface IUpdateModuleReq {
   title?: string;
   lessons?: number;
   hours?: number;
@@ -15,7 +15,7 @@ export interface UpdateModuleRequest {
   completed?: boolean;
 }
 
-export interface BulkUpdateModulesRequest {
+export interface IBulkUpdateModulesReq {
   moduleIds: string[];
-  updates: UpdateModuleRequest;
+  updates: IUpdateModuleReq;
 }

@@ -1,5 +1,7 @@
-import { useCertificate } from '@/hooks/useCertificate';
+import { useMutation } from '@tanstack/react-query';
+import { queryClient } from '@/lib/queryClient';
 import type { CertificateFormData } from '@/schemas/certificate.schema';
+import { certificateService } from '@/services/certificate.service';
 import type { Course } from '@/types';
 import { AwardIcon } from 'lucide-react';
 import { useCallback, useState } from 'react';
@@ -16,7 +18,29 @@ interface CourseCertificateDialogProps {
 export function CourseCertificateDialog({ course }: CourseCertificateDialogProps) {
   const [isOpen, setIsOpen] = useState(false);
   const [isEditMode, setIsEditMode] = useState(false);
-  const { updateCertificate, removeCertificate, isUpdating, isRemoving } = useCertificate();
+  const updateMutation = useMutation({
+    mutationFn: ({
+      courseId,
+      certificateFile,
+      issuedAt,
+    }: {
+      courseId: string;
+      certificateFile: File;
+      issuedAt: Date | null;
+    }) => certificateService.updateCertificate(courseId, certificateFile, issuedAt),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['courses'] });
+      toast.success('Certificado adicionado com sucesso!');
+    },
+  });
+
+  const removeMutation = useMutation({
+    mutationFn: (courseId: string) => certificateService.removeCertificate(courseId),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['courses'] });
+      toast.success('Certificado removido com sucesso!');
+    },
+  });
 
   const hasCertificate = !!course.certificate_url;
 
@@ -34,7 +58,7 @@ export function CourseCertificateDialog({ course }: CourseCertificateDialogProps
         return;
       }
 
-      await updateCertificate({
+      await updateMutation.mutateAsync({
         courseId: course.id,
         certificateFile: data.certificate,
         issuedAt: data.date ?? null,
@@ -43,14 +67,14 @@ export function CourseCertificateDialog({ course }: CourseCertificateDialogProps
       setIsOpen(false);
       setIsEditMode(false);
     },
-    [course.id, updateCertificate]
+    [course.id, updateMutation]
   );
 
   const handleRemove = useCallback(async () => {
-    await removeCertificate(course.id);
+    await removeMutation.mutateAsync(course.id);
     setIsOpen(false);
     setIsEditMode(false);
-  }, [course.id, removeCertificate]);
+  }, [course.id, removeMutation]);
 
   const handleEdit = useCallback(() => {
     setIsEditMode(true);
@@ -74,7 +98,7 @@ export function CourseCertificateDialog({ course }: CourseCertificateDialogProps
           course={course}
           onSubmit={handleSubmit}
           onCancel={handleCancel}
-          isSubmitting={isUpdating}
+          isSubmitting={updateMutation.isPending}
         />
       </Dialog>
     );
@@ -92,7 +116,7 @@ export function CourseCertificateDialog({ course }: CourseCertificateDialogProps
         course={course}
         onEdit={handleEdit}
         onRemove={handleRemove}
-        isRemoving={isRemoving}
+        isRemoving={removeMutation.isPending}
       />
     </Dialog>
   );

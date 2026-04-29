@@ -1,4 +1,4 @@
-export interface CreateCourseRequest {
+export interface ICreateCourseReq {
   title: string;
   modules?: Array<{
     title: string;
@@ -9,7 +9,7 @@ export interface CreateCourseRequest {
   }>;
 }
 
-export interface UpdateCourseRequest {
+export interface IUpdateCourseReq {
   title?: string;
   modules?: Array<{
     id?: string;
@@ -19,4 +19,14 @@ export interface UpdateCourseRequest {
     minutes: number;
     completed?: boolean;
   }>;
+}
+
+export interface ICreateCoursePayloadReq {
+  title: string;
+}
+
+export interface IUpdateCoursePayloadReq {
+  title?: string;
+  certificate_issued_at?: string | null;
+  certificate_url?: string | null;
 }

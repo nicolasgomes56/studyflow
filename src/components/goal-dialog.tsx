@@ -1,8 +1,11 @@
+import { useMutation, useQuery } from '@tanstack/react-query';
 import { Target } from 'lucide-react';
 import { useState, useTransition } from 'react';
 import { Controller, useForm } from 'react-hook-form';
-import { useGoal } from '@/hooks/useGoal';
-import type { SaveGoalRequest } from '@/types/requests/goal.request';
+import { queryClient } from '@/lib/queryClient';
+import { goalService } from '@/services/goal.service';
+import type { ISaveGoalReq } from '@/types/requests/goal.request';
+import { toast } from 'sonner';
 import { Button } from './ui/button';
 import {
   Dialog,
@@ -19,7 +22,17 @@ import { Switch } from './ui/switch';
 
 export function GoalDialog() {
   const [open, setOpen] = useState(false);
-  const { goal, saveGoal, isLoading } = useGoal();
+  const { data: goal, isLoading } = useQuery({
+    queryKey: ['goal'],
+    queryFn: goalService.getGoal,
+  });
+  const saveGoalMutation = useMutation({
+    mutationFn: goalService.saveGoal,
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['goal'] });
+      toast.success('Meta salva com sucesso!');
+    },
+  });
   const [isPending, startTransition] = useTransition();
 
   const {
@@ -27,15 +40,18 @@ export function GoalDialog() {
     register,
     control,
     formState: { errors },
-  } = useForm<SaveGoalRequest>({
+  } = useForm<ISaveGoalReq>({
     values: goal
       ? { daily_hours: goal.daily_hours, consider_weekends: goal.consider_weekends }
       : { daily_hours: 1, consider_weekends: true },
   });
 
-  const onSubmit = (data: SaveGoalRequest) => {
+  const onSubmit = (data: ISaveGoalReq) => {
     startTransition(async () => {
-      await saveGoal(data);
+      await saveGoalMutation.mutateAsync({
+        ...data,
+        id: goal?.id,
+      });
       setOpen(false);
     });
   };

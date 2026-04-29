@@ -1,22 +1,24 @@
-import { modulesRepository } from '@/repositories/modules.repository';
+import { api } from '@/lib/axios';
 import type { Module } from '@/types/Module';
 import type {
-  BulkUpdateModulesRequest,
-  CreateModuleRequest,
-  UpdateModuleRequest,
+  IBulkUpdateModulesReq,
+  ICreateModuleReq,
+  IUpdateModuleReq,
 } from '@/types/requests/module.request';
 
 export const modulesService = {
   async getModulesByCourse(courseId: string): Promise<Module[]> {
-    return modulesRepository.findByCourseId(courseId);
+    const { data } = await api.get<Module[]>(`/modules?courseId=${courseId}`);
+    return data;
   },
 
   async getModuleById(moduleId: string): Promise<Module> {
-    return modulesRepository.findById(moduleId);
+    const { data } = await api.get<Module>(`/modules/${moduleId}`);
+    return data;
   },
 
-  async createModule(input: CreateModuleRequest): Promise<Module> {
-    const modules = await modulesRepository.createMany([
+  async createModule(input: ICreateModuleReq): Promise<Module> {
+    const { data: modules } = await api.post<Module[]>('/modules/bulk', [
       {
         course_id: input.course_id,
         title: input.title,
@@ -30,30 +32,24 @@ export const modulesService = {
     return modules[0];
   },
 
-  async updateModule(moduleId: string, input: UpdateModuleRequest): Promise<Module> {
-    await modulesRepository.update(moduleId, input);
-    return modulesRepository.findById(moduleId);
+  async updateModule(moduleId: string, input: IUpdateModuleReq): Promise<Module> {
+    await api.patch(`/modules/${moduleId}`, input);
+    return this.getModuleById(moduleId);
   },
 
   async deleteModule(moduleId: string): Promise<void> {
-    await modulesRepository.deleteMany([moduleId]);
+    await api.delete('/modules', { data: { ids: [moduleId] } });
   },
 
   async toggleModuleComplete(moduleId: string, courseId: string): Promise<Module> {
-    await modulesRepository.toggleComplete(moduleId, courseId);
-    return modulesRepository.findById(moduleId);
+    await api.post(`/modules/${moduleId}/toggle?courseId=${courseId}`);
+    return this.getModuleById(moduleId);
   },
 
-  async bulkUpdateModules(request: BulkUpdateModulesRequest): Promise<Module[]> {
+  async bulkUpdateModules(request: IBulkUpdateModulesReq): Promise<Module[]> {
     const { moduleIds, updates } = request;
 
-    const modulesToUpdate = moduleIds.map((id) => ({
-      id,
-      ...updates,
-    }));
-
-    await modulesRepository.updateMany(modulesToUpdate);
-
-    return Promise.all(moduleIds.map((id) => modulesRepository.findById(id)));
+    await Promise.all(moduleIds.map((id) => api.patch(`/modules/${id}`, updates)));
+    return Promise.all(moduleIds.map((id) => this.getModuleById(id)));
   },
 };

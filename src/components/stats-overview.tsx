@@ -1,7 +1,8 @@
 import NumberFlow from '@number-flow/react';
+import { useQuery } from '@tanstack/react-query';
 import { Award, BookOpen, Clock, TrendingUp } from 'lucide-react';
 import { useDeferredValue, useMemo } from 'react';
-import { useCourses } from '@/hooks/useCourses';
+import { coursesService } from '@/services/courses.service';
 import { getOverallProgress } from '@/utils';
 import { BorderBeam } from './ui/border-beam';
 import { Card, CardContent, CardHeader, CardTitle } from './ui/card';
@@ -43,7 +44,10 @@ const NUMBER_FLOW_CONFIG = {
 } as const;
 
 export function StatsOverview() {
-  const { courses } = useCourses();
+  const { data: courses = [] } = useQuery({
+    queryKey: ['courses'],
+    queryFn: coursesService.getCourses,
+  });
 
   const deferredCourses = useDeferredValue(courses);
 

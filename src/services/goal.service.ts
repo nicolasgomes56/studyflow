@@ -1,13 +1,15 @@
-import { goalsRepository } from '@/repositories/goals.repository';
+import { api } from '@/lib/axios';
 import type { Goals } from '@/types/Goals';
-import type { SaveGoalRequest } from '@/types/requests/goal.request';
+import type { IUpsertGoalReq } from '@/types/requests/goal.request';
 
 export const goalService = {
   async getGoal(): Promise<Goals | null> {
-    return goalsRepository.find();
+    const { data } = await api.get<Goals | null>('/goals');
+    return data;
   },
 
-  async saveGoal(goal: SaveGoalRequest & { id?: string }): Promise<Goals> {
-    return goalsRepository.upsert(goal);
+  async saveGoal(goal: IUpsertGoalReq): Promise<Goals> {
+    const { data } = await api.put<Goals>('/goals', goal);
+    return data;
   },
 };

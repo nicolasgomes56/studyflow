@@ -1,4 +1,6 @@
-import { useCourses } from '@/hooks/useCourses';
+import { useMutation } from '@tanstack/react-query';
+import { queryClient } from '@/lib/queryClient';
+import { coursesService } from '@/services/courses.service';
 import type { Course } from '@/types/Course';
 import {
   calculateCourseProgress,
@@ -17,6 +19,7 @@ import {
   Trash2,
 } from 'lucide-react';
 import { memo, useState, useTransition } from 'react';
+import { toast } from 'sonner';
 import { CourseCertificateDialog } from './certificate/course-certificate-dialog';
 import { CourseDialog } from './course-dialog';
 import {
@@ -46,7 +49,22 @@ interface CourseCardProps {
 }
 
 function CourseCardComponent({ course }: CourseCardProps) {
-  const { toggleModuleComplete, deleteCourse } = useCourses();
+  const deleteMutation = useMutation({
+    mutationFn: coursesService.deleteCourse,
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['courses'] });
+      toast.success('Curso removido com sucesso!');
+    },
+  });
+
+  const toggleModuleMutation = useMutation({
+    mutationFn: ({ courseId, moduleId }: { courseId: string; moduleId: string }) =>
+      coursesService.toggleModuleComplete(courseId, moduleId),
+    onSettled: () => {
+      queryClient.invalidateQueries({ queryKey: ['courses'] });
+    },
+  });
+
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
   const [isPending, startTransition] = useTransition();
@@ -57,13 +75,13 @@ function CourseCardComponent({ course }: CourseCardProps) {
 
   const handleToggleModule = (moduleId: string) => {
     startTransition(async () => {
-      await toggleModuleComplete({ courseId: course.id, moduleId });
+      await toggleModuleMutation.mutateAsync({ courseId: course.id, moduleId });
     });
   };
 
   const handleDeleteCourse = () => {
     startTransition(async () => {
-      await deleteCourse(course.id);
+      await deleteMutation.mutateAsync(course.id);
       setIsDeleteDialogOpen(false);
     });
   };

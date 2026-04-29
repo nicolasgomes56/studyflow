@@ -1,9 +1,13 @@
 import { zodResolver } from '@hookform/resolvers/zod';
+import { useMutation, useQuery } from '@tanstack/react-query';
 import { Plus, Trash2 } from 'lucide-react';
 import { useTransition } from 'react';
 import { useFieldArray, useForm } from 'react-hook-form';
-import { useCourses } from '@/hooks/useCourses';
+import { queryClient } from '@/lib/queryClient';
 import { type CourseFormData, courseFormSchema } from '@/schemas/course.schema';
+import { coursesService } from '@/services/courses.service';
+import type { IUpdateCourseReq } from '@/types/requests/course.request';
+import { toast } from 'sonner';
 import { Button } from './ui/button';
 import {
   Dialog,
@@ -24,7 +28,44 @@ interface CourseDialogProps {
 }
 
 export function CourseDialog({ courseId, isOpen, onOpenChange }: CourseDialogProps) {
-  const { createCourse, updateCourse, courseFormValues } = useCourses(courseId);
+  const courseByIdQuery = useQuery({
+    queryKey: ['courses', courseId],
+    queryFn: () => {
+      if (!courseId) throw new Error('ID do curso é obrigatório');
+      return coursesService.getCourseById(courseId);
+    },
+    enabled: !!courseId,
+    select: (data) => ({
+      title: data.title,
+      modules: data.modules.map((module) => ({
+        id: module.id,
+        title: module.title,
+        lessons: module.lessons,
+        hours: module.hours,
+        minutes: module.minutes,
+        completed: module.completed,
+      })),
+    }),
+  });
+
+  const createMutation = useMutation({
+    mutationFn: coursesService.createCourse,
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['courses'] });
+      toast.success('Curso criado com sucesso!');
+    },
+  });
+
+  const updateMutation = useMutation({
+    mutationFn: ({ id, input }: { id: string; input: IUpdateCourseReq }) =>
+      coursesService.updateCourse(id, input),
+    onSuccess: (_, variables) => {
+      queryClient.invalidateQueries({ queryKey: ['courses'] });
+      queryClient.invalidateQueries({ queryKey: ['courses', variables.id] });
+      toast.success('Curso atualizado com sucesso!');
+    },
+  });
+
   const [isPending, startTransition] = useTransition();
 
   const {
@@ -34,14 +75,16 @@ export function CourseDialog({ courseId, isOpen, onOpenChange }: CourseDialogPro
     formState: { errors },
   } = useForm<CourseFormData>({
     resolver: zodResolver(courseFormSchema),
-    values: courseFormValues ?? { title: '', modules: [] },
+    values: courseByIdQuery.data ?? { title: '', modules: [] },
   });
 
   const { fields, append, remove } = useFieldArray({ control, name: 'modules' });
 
   const onSubmit = (data: CourseFormData) => {
     startTransition(async () => {
-      const action = courseId ? updateCourse({ id: courseId, input: data }) : createCourse(data);
+      const action = courseId
+        ? updateMutation.mutateAsync({ id: courseId, input: data })
+        : createMutation.mutateAsync(data);
 
       await action;
       onOpenChange(false);

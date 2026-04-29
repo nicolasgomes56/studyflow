@@ -1,15 +1,22 @@
 import { addDays, format } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
+import { useQuery } from '@tanstack/react-query';
 import { Calendar, Clock, Loader2, TrendingUp } from 'lucide-react';
 import { useDeferredValue, useMemo } from 'react';
-import { useCourses } from '@/hooks/useCourses';
-import { useGoal } from '@/hooks/useGoal';
+import { coursesService } from '@/services/courses.service';
+import { goalService } from '@/services/goal.service';
 import { formatMinutesToHoursAndMinutes } from '@/utils';
 import { Card, CardContent, CardHeader, CardTitle } from './ui/card';
 
 export function InsightsPanel() {
-  const { courses } = useCourses();
-  const { goal } = useGoal();
+  const { data: courses = [] } = useQuery({
+    queryKey: ['courses'],
+    queryFn: coursesService.getCourses,
+  });
+  const { data: goal } = useQuery({
+    queryKey: ['goal'],
+    queryFn: goalService.getGoal,
+  });
 
   const deferredCourses = useDeferredValue(courses);
 

@@ -4,7 +4,7 @@
 <p align="center">
   <img src="https://img.shields.io/badge/React-20232A?style=for-the-badge&logo=react&logoColor=61DAFB" alt="React">
   <img src="https://img.shields.io/badge/Vite-646CFF?style=for-the-badge&logo=vite&logoColor=white" alt="Vite">
-  <img src="https://img.shields.io/badge/Supabase-3ECF8E?style=for-the-badge&logo=supabase&logoColor=white" alt="Supabase">
+  <img src="https://img.shields.io/badge/MSW-FF6A33?style=for-the-badge&logo=mockserviceworker&logoColor=white" alt="MSW">
   <img src="https://img.shields.io/badge/Biome-06B6D4?style=for-the-badge&logo=biome&logoColor=white" alt="Biome">
 </p>
 
@@ -43,7 +43,8 @@ O projeto foi construído utilizando tecnologias modernas e eficientes para gara
 | **TypeScript**         | Superset do JavaScript para tipagem estática.       |
 | **Vite**               | Build tool de última geração para o frontend.       |
 | **Tailwind CSS**       | Framework CSS utility-first para estilização.       |
-| **Supabase**           | Backend-as-a-Service para banco de dados e autenticação. |
+| **MSW**                | Mock de API no navegador para desenvolvimento local.      |
+| **Axios**              | Cliente HTTP com interceptors para integração com a API.  |
 | **TanStack React Query**| Gerenciamento de estado assíncrono e caching.     |
 | **React Hook Form**    | Gerenciamento de formulários.                       |
 | **Zod**                | Validação de schemas e tipos.                       |
@@ -74,16 +75,7 @@ Siga os passos abaixo para configurar e executar o projeto em seu ambiente local
     pnpm install
     ```
 
-3.  **Configure as variáveis de ambiente:**
-    - Crie um arquivo `.env` na raiz do projeto, copiando o `.env.example`.
-    - Preencha as variáveis com as suas chaves do Supabase.
-
-    ```
-    VITE_SUPABASE_URL="SUA_URL_SUPABASE"
-    VITE_SUPABASE_KEY="SUA_ANON_KEY_SUPABASE"
-    ```
-
-4.  **Execute o projeto:**
+3.  **Execute o projeto:**
     ```bash
     pnpm dev
     ```
@@ -103,11 +95,13 @@ A estrutura de arquivos foi organizada para manter o código modular, escalável
 │   ├── /ui (Componentes reutilizáveis do Shadcn/ui)
 │   └── (Componentes específicos da aplicação)
 ├── /hooks (Hooks customizados para gerenciamento de estado e lógica da UI)
-├── /lib (Configurações de clientes - Supabase, QueryClient e utils)
-├── /repositories (Camada de acesso a dados, responsável pela comunicação com o Supabase)
+├── /lib (Configurações de clientes - Axios, QueryClient e utils)
+├── /mocks (Handlers e dados mockados com MSW)
 ├── /schemas (Validação de dados com Zod)
-├── /services (Lógica de negócios, orquestrando as chamadas aos repositórios)
+├── /services (Lógica de negócios e comunicação com a API mockada)
 ├── /types (Definições de tipos e interfaces do TypeScript)
+│   ├── 📁 /requests (Tipos de payload para envio à API)
+│   └── 📁 /responses (Tipos de retorno da API)
 └── /utils (Funções utilitárias)
 ```
 
