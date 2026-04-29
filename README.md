@@ -1,112 +1,94 @@
-
-# 🎓 StudyFlow: Organize seus Estudos e Acompanhe seu Progresso
+# 🎓 StudyFlow
 
 <p align="center">
   <img src="https://img.shields.io/badge/React-20232A?style=for-the-badge&logo=react&logoColor=61DAFB" alt="React">
   <img src="https://img.shields.io/badge/Vite-646CFF?style=for-the-badge&logo=vite&logoColor=white" alt="Vite">
-  <img src="https://img.shields.io/badge/MSW-FF6A33?style=for-the-badge&logo=mockserviceworker&logoColor=white" alt="MSW">
-  <img src="https://img.shields.io/badge/Biome-06B6D4?style=for-the-badge&logo=biome&logoColor=white" alt="Biome">
+  <img src="https://img.shields.io/badge/.NET-512BD4?style=for-the-badge&logo=dotnet&logoColor=white" alt=".NET">
+  <img src="https://img.shields.io/badge/PostgreSQL-316192?style=for-the-badge&logo=postgresql&logoColor=white" alt="PostgreSQL">
+  <img src="https://img.shields.io/badge/Docker_Compose-2496ED?style=for-the-badge&logo=docker&logoColor=white" alt="Docker Compose">
+  <img src="https://img.shields.io/badge/GitHub_Actions-2088FF?style=for-the-badge&logo=github-actions&logoColor=white" alt="GitHub Actions">
 </p>
 
-O **StudyFlow** é uma aplicação web moderna e intuitiva projetada para ajudar estudantes e aprendizes a organizar seus cursos, acompanhar o progresso e alcançar suas metas de estudo de forma eficiente.
+Plataforma para organizar estudos, acompanhar progresso e manter metas de aprendizado com foco em simplicidade, produtividade e evolução contínua.
 
-Este projeto nasceu da necessidade de uma ferramenta centralizada que não apenas registra o avanço nos estudos, mas também motiva o usuário através de uma interface limpa, insights visuais e um sistema de metas claras. Em um mundo com inúmeras fontes de conhecimento, o StudyFlow busca ser o seu parceiro para transformar o caos de informações em uma jornada de aprendizado estruturada e gratificante.
+![StudyFlow Banner](/banner-img.png)
 
----
+## ✨ O que é o StudyFlow?
 
-## ✨ Visão Geral
+O StudyFlow e um app para quem quer estudar com mais organizacao.  
+Em vez de anotar progresso em varios lugares, voce consegue centralizar cursos, modulos, metas e acompanhar como seus estudos estao evoluindo.
 
-Com uma interface limpa e focada na experiência do usuário, o StudyFlow permite que você centralize todos os seus materiais de estudo, visualize seu desempenho através de estatísticas detalhadas e se mantenha motivado com um painel de insights. O objetivo é remover a fricção do gerenciamento de estudos, permitindo que você se concentre no que realmente importa: aprender.
+Hoje o projeto esta passando por uma evolucao importante: saindo de um modelo com mocks/Supabase para uma estrutura propria com backend em C# e banco PostgreSQL.
 
-<!-- Adicione um GIF ou uma captura de tela da aplicação aqui -->
-![StudyFlow Screenshot](/banner-img.png)
+## 🚀 Principais funcionalidades
 
-## 🚀 Funcionalidades Principais
+- **Cursos e modulos:** organize o que voce esta estudando em etapas menores.
+- **Progresso e insights:** veja o quanto avancou e onde pode melhorar.
+- **Metas de estudo:** defina objetivos e acompanhe o cumprimento.
+- **Login flexivel:** acesso por email/senha ou conta GitHub.
+- **Dados isolados por usuario:** cada pessoa ve somente os proprios dados.
 
-- **📚 Gerenciamento de Cursos:** Adicione e organize seus cursos, definindo o total de horas e aulas.
-- **📦 Módulos Detalhados:** Divida cada curso em módulos com informações específicas como título, número de aulas, duração e status de conclusão.
-- **📊 Acompanhamento de Progresso:** Visualize estatísticas completas, incluindo progresso geral, total de cursos, horas de estudo e módulos concluídos.
-- **🎯 Metas de Estudo:** Defina e acompanhe suas metas de estudo para se manter focado e motivado.
-- **💡 Painel de Insights:** Obtenha informações valiosas sobre seus hábitos e desempenho de estudo.
-- **🎨 Tema Dinâmico:** Alterne entre os modos claro e escuro para uma experiência de visualização confortável.
-- **📱 Responsivo:** Acesse e organize seus estudos em qualquer dispositivo.
+## 🧭 Nova direcao do projeto
 
----
+Para simplificar desenvolvimento e deploy, o projeto esta sendo estruturado como monorepo:
 
-## 🛠️ Stack de Tecnologias
+- `apps/web`: frontend React (interface);
+- `apps/api`: backend ASP.NET Core monolitico (regras e API);
+- `tests/StudyFlow.Tests`: projeto focado em testes da API;
+- `infra`: arquivos de infraestrutura e deploy.
 
-O projeto foi construído utilizando tecnologias modernas e eficientes para garantir uma base sólida e escalável.
+Essa mudanca traz uma base mais clara para crescer o produto com seguranca e previsibilidade.
 
-| Ferramenta             | Descrição                                         |
-| ---------------------- | --------------------------------------------------- |
-| **React 19**           | Biblioteca principal para a construção da UI.       |
-| **TypeScript**         | Superset do JavaScript para tipagem estática.       |
-| **Vite**               | Build tool de última geração para o frontend.       |
-| **Tailwind CSS**       | Framework CSS utility-first para estilização.       |
-| **MSW**                | Mock de API no navegador para desenvolvimento local.      |
-| **Axios**              | Cliente HTTP com interceptors para integração com a API.  |
-| **TanStack React Query**| Gerenciamento de estado assíncrono e caching.     |
-| **React Hook Form**    | Gerenciamento de formulários.                       |
-| **Zod**                | Validação de schemas e tipos.                       |
-| **Radix UI & Shadcn/ui**| Componentes de UI acessíveis e reutilizáveis.       |
-| **Biome**              | Linter e formatador de código.                      |
+## 🔐 Como vai funcionar a autenticacao
 
----
+O backend vai suportar dois tipos de login:
 
-## 🏁 Como Começar
+1. **Email e senha**
+2. **GitHub OAuth**
 
-Siga os passos abaixo para configurar e executar o projeto em seu ambiente local.
+Se um usuario ja tiver conta com determinado email e entrar com GitHub usando esse mesmo email, a conta sera vinculada automaticamente.
 
-### Pré-requisitos
+## 🛠️ Detalhes tecnicos (resumo)
 
-- [Node.js](https://nodejs.org/en/) (versão 20 ou superior)
-- [pnpm](https://pnpm.io/) (gerenciador de pacotes)
+- Backend: ASP.NET Core (monolito em um unico projeto)
+- Banco: PostgreSQL
+- Auth: JWT + refresh token
+- Frontend: React + Vite + TypeScript
+- Deploy: VPS com Docker Compose
+- CI/CD: GitHub Actions com release por tag semantica
 
-### Instalação
+## 📡 API planejada (v1)
 
-1.  **Clone o repositório:**
-    ```bash
-    git clone https://github.com/SEU_USUARIO/studyflow.git
-    cd studyflow
-    ```
+Prefixo: `/api/v1`
 
-2.  **Instale as dependências:**
-    ```bash
-    pnpm install
-    ```
+- `auth`: `register`, `login`, `refresh`, `me`, `github/start`, `github/callback`
+- `courses` e `modules`
+- `goals`
+- `certificates`
+- `insights/overview`
 
-3.  **Execute o projeto:**
-    ```bash
-    pnpm dev
-    ```
+## ✅ Qualidade e testes
 
-A aplicação estará disponível em `http://localhost:5173`.
+Os testes ficam concentrados em `tests/StudyFlow.Tests`, com foco em:
 
----
+- login e renovacao de sessao;
+- fluxo de autenticacao com GitHub;
+- isolamento de dados entre usuarios;
+- cenarios principais do produto (curso -> modulo -> insights).
 
-## 📂 Estrutura do Projeto
+## 🚢 Entrega e deploy
 
-A estrutura de arquivos foi organizada para manter o código modular, escalável e de fácil manutenção, seguindo princípios de separação de responsabilidades.
+O fluxo de entrega sera automatizado com:
 
-```
-/src
-├── /assets
-├── /components
-│   ├── /ui (Componentes reutilizáveis do Shadcn/ui)
-│   └── (Componentes específicos da aplicação)
-├── /hooks (Hooks customizados para gerenciamento de estado e lógica da UI)
-├── /lib (Configurações de clientes - Axios, QueryClient e utils)
-├── /mocks (Handlers e dados mockados com MSW)
-├── /schemas (Validação de dados com Zod)
-├── /services (Lógica de negócios e comunicação com a API mockada)
-├── /types (Definições de tipos e interfaces do TypeScript)
-│   ├── 📁 /requests (Tipos de payload para envio à API)
-│   └── 📁 /responses (Tipos de retorno da API)
-└── /utils (Funções utilitárias)
-```
+- **CI:** build e testes em pull requests;
+- **Release:** publicacao por tag (`v*.*.*`);
+- **Deploy:** atualizacao automatica da VPS com health check.
 
----
+## ℹ️ Status atual
 
-## 📄 Licença
+Este repositorio esta em fase de migracao para essa nova arquitetura.  
+Durante a transicao, e normal coexistirem partes legadas com a nova estrutura.
 
-Este projeto está licenciado sob a Licença MIT. Veja o arquivo [LICENSE](LICENSE) para mais detalhes.
+## 📄 Licenca
+
+Este projeto esta licenciado sob a licenca MIT. Veja `LICENSE` para mais detalhes.
